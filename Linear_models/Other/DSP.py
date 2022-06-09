@@ -87,7 +87,10 @@ def terminate_sumo(sumo):
     
 edges_length = {}
 edges_lane = {}
+<<<<<<< HEAD
 edges_speed = {}
+=======
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
 def build_road_graph(network):                
     # Input   
     f = open(network)
@@ -108,8 +111,11 @@ def build_road_graph(network):
         num_lane_tag = edge_tag.findAll("lane")
         edges_lane[edge_id] = len(num_lane_tag)
 
+<<<<<<< HEAD
         edge_speed = float(lane_tag["speed"])
         edges_speed[edge_id] = edge_speed
+=======
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
 
     graph = nx.DiGraph()            
 
@@ -117,7 +123,11 @@ def build_road_graph(network):
         source_edge = connection_tag["from"]        
         dest_edge = connection_tag["to"]
         #print source_edge, dest_edge, edges_length[source_edge]
+<<<<<<< HEAD
         graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=edges_length[source_edge], weight=0, congested = 0, speed = edges_speed[source_edge])
+=======
+        graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=edges_length[source_edge], weight=0, congested = 0 )
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
         
 
     return graph          
@@ -162,12 +172,20 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             # Assuming that min gap = 2.5m
             k_jam = road_length/(avr_car_length + 2.5)
             k_o = k_jam/2
+<<<<<<< HEAD
             v_f = graph.edge[road][successor_road]["speed"]
             v = v_f * (1 - math.sqrt(k_i/k_jam))
             t = road_length / v
             if begin_of_cycle:
                 graph.edge[road][successor_road]["weight"] = travel_time
             else:
+=======
+            if begin_of_cycle:
+                graph.edge[road][successor_road]["weight"] = travel_time
+            else:
+                t = (graph.edge[road][successor_road]["weight"] + travel_time) / 2
+                t = t if t > 0 else travel_time
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
                 graph.edge[road][successor_road]["weight"] = t
             if(k_i/k_jam > k_o):
                 graph.edge[road][successor_road]["congested"] = 1

@@ -8,11 +8,8 @@ import subprocess
 import signal
 import socket
 import logging
-from paths import ROOT_PATH
-sys.path.insert(1, ROOT_PATH)
 
 from networkx.algorithms.traversal.breadth_first_search import bfs_edges
-from numpy.lib.function_base import append
 import thread
 import time
 import tempfile
@@ -20,8 +17,7 @@ import math
 import random
 import networkx as nx
 import numpy as np
-import random
-import math
+
 LOG_CARROS_RUAS = 100
 
 from k_shortest_paths import k_shortest_paths
@@ -75,15 +71,6 @@ def find_unused_port():
     
     return port
 
-"""def terminate_sumo(sumo):
-    if sumo.returncode == None:
-        os.kill(sumo.pid, signal.SIGTERM)
-        time.sleep(0.5)
-        if sumo.returncode == None:
-            os.kill(sumo.pid, signal.SIGKILL)
-            time.sleep(1)
-            if sumo.returncode == None:
-                time.sleep(10)"""
     
     
     
@@ -122,7 +109,7 @@ def build_road_graph(network):
         graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=edges_length[source_edge], weight=0, congested = 0, speed = edges_speed[source_edge])
         
 
-    return graph         
+    return graph 
  
 
 def log_densidade_speed(time):
@@ -149,54 +136,39 @@ def log_densidade_speed(time):
     
     output.write(str(np.amin(speed) * 3.6) + '\t' + str(np.average(speed) * 3.6) + '\t' + str(np.amax(speed) * 3.6) + '\t' + str(density)+'\n')
 
-def update_travel_time_on_roads(graph, time, begin_of_cycle):
+
+def update_travel_time_on_roads(graph, time, begin_of_cycle, threshold):
     congested_roads = []
-    network_capacity = 0
-    edges_number = 0
     for road in graph.nodes_iter():
-<<<<<<< HEAD
-=======
+        speedList = []
+        vehicle_list = traci.edge.getLastStepVehicleIDs(road.encode("ascii"))
+        if len(vehicle_list) == 0:
+            continue
         travel_time = traci.edge.getAdaptedTraveltime(road.encode("ascii"), time)
         if travel_time <= 0:
             travel_time = traci.edge.getTraveltime(road.encode("ascii"))
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
+        for vehicle in vehicle_list:
+            speedList.append(traci.vehicle.getSpeed(vehicle))
+        avgSpeed = np.asarray(speedList).mean()
         if road.startswith(":"): continue
         for successor_road in graph.successors_iter(road):
-            # If it is the first measurement in a cycle, then do not compute the mean
-            road_length = graph.edge[road][successor_road]["length"]
-            k_i = traci.edge.getLastStepVehicleNumber(road.encode("ascii"))
-            avr_car_length = traci.edge.getLastStepLength(road.encode("ascii"))
-            # Assuming that min gap = 2.5m
-            k_jam = road_length/(avr_car_length + 2.5)
-<<<<<<< HEAD
-            k_o = k_jam/math.e
-            v_f = graph.edge[road][successor_road]["speed"]
-            v = v_f * math.exp((-1/2) * ((k_i/k_o)**2))
-            t = road_length / v
-            graph.edge[road][successor_road]["weight"] = t
-=======
-            k_o = k_jam/2
-            v_f = graph.edge[road][successor_road]["speed"]
-            v = v_f * (1 - k_i/k_jam)
-            t = road_length / v
             if begin_of_cycle:
                 graph.edge[road][successor_road]["weight"] = travel_time
             else:
+                t = (graph.edge[road][successor_road]["weight"] + travel_time) / 2
+                t = t if t > 0 else travel_time
                 graph.edge[road][successor_road]["weight"] = t
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
-            network_capacity += k_jam
-            edges_number += 1
-            if(k_i/k_jam > k_o):
+            road_speed = graph.edge[road][successor_road]["speed"]
+            if road_speed == 0:
+                hcm = 0
+            else:
+                hcm = avgSpeed/road_speed
+            if(hcm < threshold):
                 graph.edge[road][successor_road]["congested"] = 1
                 if(road.encode("ascii") not in congested_roads):
                     congested_roads.append(road.encode("ascii"))
-            avg_cap = network_capacity/edges_number
-        
-                
-                
                     
-
-    return graph,congested_roads, avg_cap
+    return graph,congested_roads
 
 
 
@@ -292,13 +264,11 @@ def create_vehicle_dict_probability(probability, vnumber):
 
 def gen_canditates_reroute(graph, congested_roads, level):
     vehicles_reroute = []
-    ODpairs = set()
     for road in congested_roads:
         cont = 0
         bfs = []
         roads_reroute = bfs_edges(graph, road, True)
         for lane in roads_reroute:
-            if lane[1].startswith(":"): continue
             if(lane[0] in bfs):
                 cont = cont + 1
                 bfs = []
@@ -313,18 +283,14 @@ def gen_canditates_reroute(graph, congested_roads, level):
                 for vehicle in vehicles_in_the_lane:
                     if(vehicle not in vehicles_reroute):
                         vehicles_reroute.append(vehicle)
-                        source = traci.vehicle.getRoadID(vehicle)
-                        route = traci.vehicle.getRoute(vehicle)
-                        ODpair = (source, route[-1])
-                        ODpairs.add(ODpair)
-
-                          
-    return vehicles_reroute, ODpairs
+    
+    
+    return vehicles_reroute
 
                 
     
 
-def calculate_RCI(graph, vehicle_route):
+def calculate_RCI(congested_roads, graph, vehicle_route):
     travel_time = 0
     ff_travel_time = 0
     for i, road in enumerate(vehicle_route):
@@ -338,10 +304,10 @@ def calculate_RCI(graph, vehicle_route):
 
 
 
-def calculate_ACI(graph, vehicle_route):
+def calculate_ACI(congested_roads, graph, vehicle_route):
     travel_time = 0
     ff_travel_time = 0
-    for i in range(len(vehicle_route)):
+    for i, road in enumerate(vehicle_route):
         if i != len(vehicle_route) - 1:
             travel_time += graph.edge[vehicle_route[i]][vehicle_route[i+1]]["weight"]
             if (graph.edge[vehicle_route[i]][vehicle_route[i+1]]["congested"] == 0):
@@ -353,21 +319,26 @@ def calculate_ACI(graph, vehicle_route):
 
 
 
-def define_urgency(urgency,reroute_list, graph):
+def define_urgency(urgency, congested_roads,reroute_list, graph):
     list_cars = []
     if(urgency == 0):
         return 0
     for vehicle in reroute_list:
         route = traci.vehicle.getRoute(vehicle)
         if(urgency == 2):
-            urgency_calc = calculate_ACI(graph, route)
-            aux = (vehicle, urgency_calc)
+            urgency = calculate_ACI(congested_roads, graph, route)
+            aux = (vehicle, urgency)
             list_cars.append(aux)
         
         else:
-            urgency_calc = calculate_RCI(graph, route)
-            aux = (vehicle, urgency_calc)
+            urgency = calculate_RCI(congested_roads, graph, route)
+            aux = (vehicle, urgency)
             list_cars.append(aux)
+            if urgency > 0:
+                urgency = urgency
+            elif urgency < 0:
+                urgency = calculate_RCI(graph, route)
+
 
     list_cars = sorted(list_cars, key=lambda car:car[1], reverse=True)
     ordenated_list = []
@@ -377,92 +348,29 @@ def define_urgency(urgency,reroute_list, graph):
 
 
 
-def getLeastPopularPath(kPaths, roadList, fcList, Cavg, graph):
-    Popularity_list = []
-    n = 0
-    for fc in fcList:
-        n += fc
-    for path in kPaths:
-        PathEv = 0
-        for road in path:
-            i = roadList.index(road)
-            C_road = 0
-            for successor_road in graph.successors_iter(road):
-                road_length = graph.edge[road][successor_road]["length"]
-                avr_car_length = traci.edge.getLastStepLength(road.encode("ascii"))
-                # Assuming that min gap = 2.5m
-                C_road = road_length/(avr_car_length + 2.5)
-                break
-            if fcList[i] == 0 or C_road ==0 : continue
-            x = fcList[i]/n
-            wi = Cavg/C_road
-            PathEv += wi * x * math.log(x)
-        PathEv = PathEv * -1
-        try:
-            PopPath = math.exp(PathEv)
-        except:
-            PopPath = float('inf')
-        Popularity_list.append(PopPath)
-    Least_popular_index = Popularity_list.index(min(Popularity_list))
-    return kPaths[Least_popular_index]
-    
-        
+def reroute_vehicles(list_vehicles, graph, probability):
+    ####simple_paths = []
 
-def updateFootprint(Path, fcList, roadList):
-    for road in Path:
-        i = roadList.index(road)
-        fcList[i] += 1
-    return fcList
+    for vehicle in list_vehicles:
+        
+        #if vehicles_p[vehicle] > probability:
+        #    continue
+        
+        source = traci.vehicle.getRoadID(vehicle)
+        if source.startswith(":"): continue
+        route = traci.vehicle.getRoute(vehicle)
+        destination = route[-1]
+                                        
+        if source != destination:
+            logging.debug("Calculating shortest paths for pair (%s, %s)" % (source, destination))
+            new_route = nx.dijkstra_path(graph, source, destination)
+            traci.vehicle.setRoute(vehicle, new_route)   
   
          
-def calculate_all_paths(ODpairs, k, graph, all_paths):
-    for pair in ODpairs:
-        source = pair[0]
-        destination = pair[1]
-        k_paths = k_shortest_paths(graph, source, destination, k)
-        for path in k_paths[1]:
-            if path in all_paths: continue
-            all_paths.append(path)
-    return all_paths
+    
 
-
-
-def reroute_vehicles(allPaths, vehicle_list, avg_cap, graph, k):
-    fc_list = []
-    road_list = []
-    initial = 1
-    for path in allPaths:
-        for road in path:
-            if road not in road_list:
-                road_list.append(road)
-                fc_list.append(0)
-        
-    for vehicle in vehicle_list:
-        k_paths = []
-        route = traci.vehicle.getRoute(vehicle)
-        source = traci.vehicle.getRoadID(vehicle)
-        destination = route[-1]
-        ODpair = (source, destination)
-        for path in allPaths:
-            p_source = path[0]
-            p_dest = path[-1]
-            p_ODpair = (p_source, p_dest)
-            if p_ODpair == ODpair:
-                k_paths.append(path)
-                if(len(k_paths) == k):
-                    break
-        if initial == 1:
-            traci.vehicle.setRoute(vehicle, k_paths[0])
-            fc_list = updateFootprint(k_paths[0], fc_list, road_list)
-            initial = 0
-        else:
-            new_route = getLeastPopularPath(k_paths, road_list, fc_list, avg_cap, graph)
-            traci.vehicle.setRoute(vehicle, new_route)
-            fc_list = updateFootprint(new_route, fc_list, road_list)
-
-            
               
-def run(network, begin, end, interval, t, output, probability, vnumber, k_paths, level, urgency):
+def run(network, begin, end, interval, t, output, probability, vnumber,threshold, level, urgency):
     logging.debug("Building road graph")         
     road_graph_travel_time = build_road_graph(network)
     logging.debug("Finding all simple paths")
@@ -476,9 +384,11 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
     travel_time_cycle_begin = interval
 
 
-    #flag = 0
+
+
+    flag = 0
     step = 1
-    while (step == 1 or traci.simulation.getMinExpectedNumber() > 0):
+    while (step == 1 or traci.simulation.getMinExpectedNumber() > 0) and flag == 0:
 
         logging.debug("Minimum expected number of vehicles: %d" % traci.simulation.getMinExpectedNumber())
         traci.simulationStep()
@@ -488,8 +398,8 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
         
 
         # Se time > 0, simular X carros por time segundos.
-        #if t > 0 and step > t + 1:
-        #    flag = 1
+        if t > 0 and step > t + 1:
+            flag = 1
         
         if (int(step) == 100) or (int(step) == 150) or (int(step) == 200):
             save_image_file(output,step)
@@ -498,22 +408,16 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
         logging.debug("Simulation time %d" % step)
         if step >= travel_time_cycle_begin and travel_time_cycle_begin <= end and step%interval == 0:
             logging.debug("Updating travel time on roads at simulation time %d" % step)
-            updated_graph = update_travel_time_on_roads(road_graph_travel_time, step, travel_time_cycle_begin == step)
+            updated_graph = update_travel_time_on_roads(road_graph_travel_time, step, travel_time_cycle_begin == step, threshold)
             road_graph_travel_time = updated_graph[0]
             congested_roads = updated_graph[1]
-            avg_capacity = updated_graph[2]
-            if(len(congested_roads)>0):
-                candidates_and_ODpairs = gen_canditates_reroute(road_graph_travel_time,congested_roads, level)
-                candidates_reroute = candidates_and_ODpairs[0]
-                candidates_reroute = define_urgency(urgency, candidates_reroute, road_graph_travel_time)
-                ODpairs = candidates_and_ODpairs[1]
-                all_paths = []
-                all_paths = calculate_all_paths(ODpairs, k_paths, road_graph_travel_time, all_paths)
-            
-                #if step >= travel_time_cycle_begin and travel_time_cycle_begin <= end and step%interval == 0:
-                logging.debug("Updating travel time on roads at simulation time %d" % step)
-                print ("\nEBkSP " , step, "  REROUTE")
-                reroute_vehicles(all_paths, candidates_reroute, avg_capacity, road_graph_travel_time, k_paths)          
+            candidates_reroute = gen_canditates_reroute(road_graph_travel_time,congested_roads, level)
+            #candidates_reroute = define_urgency(urgency, congested_roads, candidates_reroute, road_graph_travel_time)
+
+            #if step >= travel_time_cycle_begin and travel_time_cycle_begin <= end and step%interval == 0:
+            logging.debug("Updating travel time on roads at simulation time %d" % step)
+            print ("\nDSP " , step, "  REROUTE")
+            reroute_vehicles(candidates_reroute, road_graph_travel_time, probability)           
 
 
         #if step%100 == 0:
@@ -531,7 +435,7 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
     sys.stdout.flush()
     time.sleep(10)
         
-def start_simulation(sumo, scenario, network, begin, end, interval, output, vnumber, time, probability, k_paths, level, urgency, seed):
+def start_simulation(sumo, scenario, network, begin, end, interval, output, vnumber, time, probability,threshold, level, urgency):
     logging.debug("Finding unused port")
     
     unused_port_lock = UnusedPortLock()
@@ -549,17 +453,10 @@ def start_simulation(sumo, scenario, network, begin, end, interval, output, vnum
     
     if time == 0:
         create_vehicle_dict_probability(probability, vnumber)
-<<<<<<< HEAD
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output,"--seed", str(seed), "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
+        sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output, "--vehroute-output", output, "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
     else:
         create_vehicle_dict_probability(probability, 35000)
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output, "--seed", str(seed), "--device.emissions.probability", "1.0","--full-output","output.xml", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
-=======
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output,"--seed", seed, "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
-    else:
-        create_vehicle_dict_probability(probability, 35000)
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output, "--seed", seed, "--device.emissions.probability", "1.0","--full-output","output.xml", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
+        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output, "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
         
     
     
@@ -568,12 +465,11 @@ def start_simulation(sumo, scenario, network, begin, end, interval, output, vnum
             
     try:     
         traci.init(remote_port)    
-        run(network, begin, end, interval, time, output, probability, vnumber, k_paths, level, urgency)
+        run(network, begin, end, interval, time, output, probability, vnumber,threshold, level, urgency)
     except Exception as e:
         logging.exception("Something bad happened")
     finally:
-        logging.exception("Terminating SUMO")  
-        print("Simulation finished")
+        logging.exception("Terminating SUMO") 
         unused_port_lock.__exit__()
         
 def main():
@@ -586,17 +482,16 @@ def main():
     parser.add_option("-b", "--begin", dest="begin", type="int", default=1000, action="store", help="The simulation time (s) at which the re-routing begins [default: %default]", metavar="BEGIN")
     parser.add_option("-e", "--end", dest="end", type="int", default=10000, action="store", help="The simulation time (s) at which the re-routing ends [default: %default]", metavar="END")
     parser.add_option("-i", "--interval", dest="interval", type="int", default=900, action="store", help="The interval (s) of classification [default: %default]", metavar="INTERVAL")
-    parser.add_option("-o", "--output", dest="output", default="Outputs_EBkSP/reroute_ebksp", help="The XML file at which the output must be written [default: %default]", metavar="FILE")
-    parser.add_option("-l", "--logfile", dest="logfile", default="EBkSP-log.txt", help="log messages to logfile [default: %default]", metavar="FILE")
+    parser.add_option("-o", "--output", dest="output", default="Outputs_DSP-TK/dsp-tk_reroute_6.xml", help="The XML file at which the output must be written [default: %default]", metavar="FILE")
+    parser.add_option("-l", "--logfile", dest="logfile", default="DSP-tk-log.txt", help="log messages to logfile [default: %default]", metavar="FILE")
     parser.add_option("-v", "--vehicle-number", dest="vnumber", type="int", default=0, action="store", help="Number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-t", "--time", dest="time", type="int", default=0, action="store", help="Time to maintain the number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-p", "--probability", dest="probability", type="float", default=1.0, action="store", help="Probability to accept a new route [default: %default]", metavar="FILE")
-    parser.add_option("-r", "--blockead_road", dest="blockead_road", default="Chicago/sim.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")
-    parser.add_option("-k", "--k_paths", dest="k_paths",type="int", default= 3, help="A variable to set the number of paths generate to reroute [default: %default]", metavar="FILE")
-    parser.add_option("--level", dest="level", type="int", default = 3 , action="store", help="A level to decide how far from congestion to look for candidates for re-routing [default: %default]", metavar="FILE")
-    parser.add_option("--urgency", dest="urgency", type="int", default= 2, action="store", help="A variable to set the type of urgency considered. 0 = none, 1 = RCI, 2 = ACI  [default: %default]", metavar="FILE")
-    parser.add_option("-d", "--seed", dest="seed", type="int", default=0, action="store", help="The seed used to initialize the basic random number generator [default: %default]", metavar="SEED")
-    
+    parser.add_option("-r", "--blockead_road", dest="blockead_road", default="network.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")
+    parser.add_option("--threshold", dest="threshold",type="float", default= 0.6 ,action="store", help="A threshold to set if a road segment is considered congested [default: %default]", metavar="FILE")
+    parser.add_option("--level", dest="level", type="int", default=3, action="store", help="A level to decide how far from congestion to look for candidates for re-routing [default: %default]", metavar="FILE")
+    parser.add_option("--urgency", dest="urgency", type="int", default=1, action="store", help="A variable to set the type of urgency considered. 0 = none, 1 = RCI, 2 = ACI  [default: %default]", metavar="FILE")
+
     (options, args) = parser.parse_args()
     
     logging.basicConfig(filename=options.logfile, level=logging.DEBUG)
@@ -605,8 +500,7 @@ def main():
     if args:
         logging.warning("Superfluous command line arguments: \"%s\"" % " ".join(args))
         
-    start_simulation(options.command, options.scenario, options.network, options.begin, options.end, options.interval, options.output, options.vnumber, options.time, options.probability, options.k_paths, options.level, options.urgency, options.seed)
+    start_simulation(options.command, options.scenario, options.network, options.begin, options.end, options.interval, options.output, options.vnumber, options.time, options.probability,options.threshold, options.level, options.urgency)
     
 if __name__ == "__main__":
     main()    
-    

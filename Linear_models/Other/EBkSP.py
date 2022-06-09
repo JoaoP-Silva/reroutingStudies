@@ -89,7 +89,10 @@ def find_unused_port():
     
 edges_length = {}
 edges_lane = {}
+<<<<<<< HEAD
 edges_speed = {}
+=======
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
 def build_road_graph(network):                
     # Input   
     f = open(network)
@@ -110,8 +113,11 @@ def build_road_graph(network):
         num_lane_tag = edge_tag.findAll("lane")
         edges_lane[edge_id] = len(num_lane_tag)
 
+<<<<<<< HEAD
         edge_speed = float(lane_tag["speed"])
         edges_speed[edge_id] = edge_speed
+=======
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
 
     graph = nx.DiGraph()            
 
@@ -119,10 +125,17 @@ def build_road_graph(network):
         source_edge = connection_tag["from"]        
         dest_edge = connection_tag["to"]
         #print source_edge, dest_edge, edges_length[source_edge]
+<<<<<<< HEAD
         graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=edges_length[source_edge], weight=0, congested = 0, speed = edges_speed[source_edge])
         
 
     return graph         
+=======
+        graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=edges_length[source_edge], weight=0, congested = 0)
+        
+
+    return graph          
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
  
 
 def log_densidade_speed(time):
@@ -166,12 +179,20 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             # Assuming that min gap = 2.5m
             k_jam = road_length/(avr_car_length + 2.5)
             k_o = k_jam/2
+<<<<<<< HEAD
             v_f = graph.edge[road][successor_road]["speed"]
             v = v_f * (1 - math.sqrt(k_i/k_jam))
             t = road_length / v
             if begin_of_cycle:
                 graph.edge[road][successor_road]["weight"] = travel_time
             else:
+=======
+            if begin_of_cycle:
+                graph.edge[road][successor_road]["weight"] = travel_time
+            else:
+                t = (graph.edge[road][successor_road]["weight"] + travel_time) / 2
+                t = t if t > 0 else travel_time
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
                 graph.edge[road][successor_road]["weight"] = t
             network_capacity += k_jam
             edges_number += 1
@@ -313,7 +334,11 @@ def gen_canditates_reroute(graph, congested_roads, level):
                 
     
 
+<<<<<<< HEAD
 def calculate_RCI(graph, vehicle_route):
+=======
+def calculate_RCI(congested_roads, graph, vehicle_route):
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
     travel_time = 0
     ff_travel_time = 0
     for i, road in enumerate(vehicle_route):
@@ -327,7 +352,11 @@ def calculate_RCI(graph, vehicle_route):
 
 
 
+<<<<<<< HEAD
 def calculate_ACI(graph, vehicle_route):
+=======
+def calculate_ACI(congested_roads, graph, vehicle_route):
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
     travel_time = 0
     ff_travel_time = 0
     for i in range(len(vehicle_route)):
@@ -342,19 +371,31 @@ def calculate_ACI(graph, vehicle_route):
 
 
 
+<<<<<<< HEAD
 def define_urgency(urgency,reroute_list, graph):
+=======
+def define_urgency(urgency, congested_roads,reroute_list, graph):
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
     list_cars = []
     if(urgency == 0):
         return 0
     for vehicle in reroute_list:
         route = traci.vehicle.getRoute(vehicle)
         if(urgency == 2):
+<<<<<<< HEAD
             urgency_calc = calculate_ACI(graph, route)
+=======
+            urgency_calc = calculate_ACI(congested_roads, graph, route)
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
             aux = (vehicle, urgency_calc)
             list_cars.append(aux)
         
         else:
+<<<<<<< HEAD
             urgency_calc = calculate_RCI(graph, route)
+=======
+            urgency_calc = calculate_RCI(congested_roads, graph, route)
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
             aux = (vehicle, urgency_calc)
             list_cars.append(aux)
 
@@ -494,7 +535,11 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
             if(len(congested_roads)>0):
                 candidates_and_ODpairs = gen_canditates_reroute(road_graph_travel_time,congested_roads, level)
                 candidates_reroute = candidates_and_ODpairs[0]
+<<<<<<< HEAD
                 candidates_reroute = define_urgency(urgency, candidates_reroute, road_graph_travel_time)
+=======
+                candidates_reroute = define_urgency(urgency, congested_roads, candidates_reroute, road_graph_travel_time)
+>>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
                 ODpairs = candidates_and_ODpairs[1]
                 all_paths = []
                 all_paths = calculate_all_paths(ODpairs, k_paths, road_graph_travel_time, all_paths)
