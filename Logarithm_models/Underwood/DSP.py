@@ -152,12 +152,6 @@ def log_densidade_speed(time):
 def update_travel_time_on_roads(graph, time, begin_of_cycle):
     congested_roads = []
     for road in graph.nodes_iter():
-<<<<<<< HEAD
-=======
-        travel_time = traci.edge.getAdaptedTraveltime(road.encode("ascii"), time)
-        if travel_time <= 0:
-            travel_time = traci.edge.getTraveltime(road.encode("ascii"))
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
         if road.startswith(":"): continue
         for successor_road in graph.successors_iter(road):
             # If it is the first measurement in a cycle, then do not compute the mean
@@ -170,14 +164,7 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             v_f = graph.edge[road][successor_road]["speed"]
             v = v_f * math.exp(-1 * (k_i/k_o))
             t = road_length / v
-<<<<<<< HEAD
             graph.edge[road][successor_road]["weight"] = t
-=======
-            if begin_of_cycle:
-                graph.edge[road][successor_road]["weight"] = travel_time
-            else:
-                graph.edge[road][successor_road]["weight"] = t
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
             if(k_i/k_jam > k_o):
                 graph.edge[road][successor_road]["congested"] = 1
                 if(road.encode("ascii") not in congested_roads):
@@ -415,17 +402,10 @@ def start_simulation(sumo, scenario, network, begin, end, interval, output, vnum
     
     if time == 0:
         create_vehicle_dict_probability(probability, vnumber)
-<<<<<<< HEAD
         sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output, "--vehroute-output", output,"--seed", str(seed), "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
     else:
         create_vehicle_dict_probability(probability, 35000)
         sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output,"--seed", str(seed), "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
-=======
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output, "--vehroute-output", output,"--seed", seed, "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
-    else:
-        create_vehicle_dict_probability(probability, 35000)
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output,"--seed", seed, "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
         
     
     

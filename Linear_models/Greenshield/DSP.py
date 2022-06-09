@@ -73,7 +73,6 @@ def find_unused_port():
     
     return port
 
-<<<<<<< HEAD
 #def terminate_sumo(sumo):
 #    if sumo.returncode == None:
 #        os.kill(sumo.pid, signal.SIGTERM)
@@ -83,17 +82,6 @@ def find_unused_port():
 #            time.sleep(1)
 #            if sumo.returncode == None:
 #                time.sleep(10)
-=======
-def terminate_sumo(sumo):
-    if sumo.returncode == None:
-        os.kill(sumo.pid, signal.SIGTERM)
-        time.sleep(0.5)
-        if sumo.returncode == None:
-            os.kill(sumo.pid, signal.SIGKILL)
-            time.sleep(1)
-            if sumo.returncode == None:
-                time.sleep(10)
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
     
     
     
@@ -162,12 +150,6 @@ def log_densidade_speed(time):
 def update_travel_time_on_roads(graph, time, begin_of_cycle):
     congested_roads = []
     for road in graph.nodes_iter():
-<<<<<<< HEAD
-=======
-        travel_time = traci.edge.getAdaptedTraveltime(road.encode("ascii"), time)
-        if travel_time <= 0:
-            travel_time = traci.edge.getTraveltime(road.encode("ascii"))
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
         if road.startswith(":"): continue
         for successor_road in graph.successors_iter(road):
             # If it is the first measurement in a cycle, then do not compute the mean
@@ -180,14 +162,7 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             v_f = graph.edge[road][successor_road]["speed"]
             v = v_f * (1 - k_i/k_jam)
             t = road_length / v
-<<<<<<< HEAD
             graph.edge[road][successor_road]["weight"] = t
-=======
-            if begin_of_cycle:
-                graph.edge[road][successor_road]["weight"] = travel_time
-            else:
-                graph.edge[road][successor_road]["weight"] = t
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
             if(k_i/k_jam > k_o):
                 graph.edge[road][successor_road]["congested"] = 1
                 if(road.encode("ascii") not in congested_roads):
@@ -425,17 +400,10 @@ def start_simulation(sumo, scenario, network, begin, end, interval, output, vnum
     
     if time == 0:
         create_vehicle_dict_probability(probability, vnumber)
-<<<<<<< HEAD
         sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output, "--vehroute-output", output,"--seed", str(seed), "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
     else:
         create_vehicle_dict_probability(probability, 35000)
         sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output,"--seed ", str(seed), "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
-=======
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output, "--vehroute-output", output,"--seed", seed, "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
-    else:
-        create_vehicle_dict_probability(probability, 35000)
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output,"--seed", seed, "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
         
     
     
@@ -449,11 +417,7 @@ def start_simulation(sumo, scenario, network, begin, end, interval, output, vnum
         logging.exception("Something bad happened")
     finally:
         logging.exception("Terminating SUMO")  
-<<<<<<< HEAD
         #terminate_sumo(sumo)
-=======
-        terminate_sumo(sumo)
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
         unused_port_lock.__exit__()
         
 def main():
@@ -461,31 +425,18 @@ def main():
     # Option handling
     parser = OptionParser()
     parser.add_option("-c", "--command", dest="command", default="sumo.exe", help="The command used to run SUMO [default: %d efault]", metavar="COMMAND")
-<<<<<<< HEAD
     parser.add_option("-s", "--scenario", dest="scenario", default="Chicago/sim.sumocfg", help="A SUMO configuration file [default: %default]", metavar="FILE")
     parser.add_option("-n", "--network", dest="network", default="Chicago/sim.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")    
     parser.add_option("-b", "--begin", dest="begin", type="int", default=1000, action="store", help="The simulation time (s) at which the re-routing begins [default: %default]", metavar="BEGIN")
     parser.add_option("-e", "--end", dest="end", type="int", default=10000, action="store", help="The simulation time (s) at which the re-routing ends [default: %default]", metavar="END")
     parser.add_option("-i", "--interval", dest="interval", type="int", default=900, action="store", help="The interval (s) of classification [default: %default]", metavar="INTERVAL")
     parser.add_option("-o", "--output", dest="output", default="Outputs_DSP/reroute_DSP_0.xml", help="The XML file at which the output must be written [default: %default]", metavar="FILE")
-=======
-    parser.add_option("-s", "--scenario", dest="scenario", default="500_0.sumo.cfg", help="A SUMO configuration file [default: %default]", metavar="FILE")
-    parser.add_option("-n", "--network", dest="network", default="network.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")    
-    parser.add_option("-b", "--begin", dest="begin", type="int", default=0, action="store", help="The simulation time (s) at which the re-routing begins [default: %default]", metavar="BEGIN")
-    parser.add_option("-e", "--end", dest="end", type="int", default=280, action="store", help="The simulation time (s) at which the re-routing ends [default: %default]", metavar="END")
-    parser.add_option("-i", "--interval", dest="interval", type="int", default=10, action="store", help="The interval (s) of classification [default: %default]", metavar="INTERVAL")
-    parser.add_option("-o", "--output", dest="output", default="reroute.xml", help="The XML file at which the output must be written [default: %default]", metavar="FILE")
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
     parser.add_option("-l", "--logfile", dest="logfile", default="logs/DSP.log", help="log messages to logfile [default: %default]", metavar="FILE")
     parser.add_option("-v", "--vehicle-number", dest="vnumber", type="int", default=0, action="store", help="Number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-t", "--time", dest="time", type="int", default=0, action="store", help="Time to maintain the number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-p", "--probability", dest="probability", type="float", default=1.0, action="store", help="Probability to accept a new route [default: %default]", metavar="FILE")
     parser.add_option("-r", "--blockead_road", dest="blockead_road", default="network.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")
-<<<<<<< HEAD
     parser.add_option("-d", "--intseed", dest="seed", type="int", default=0, action="store", help="The seed used to initialize the basic random number generator [default: %default]", metavar="FILE")
-=======
-    parser.add_option("-d", "--seed", dest="seed", type="int", default=0, action="store", help="The seed used to initialize the basic random number generator [default: %default]", metavar="SEED")
->>>>>>> 2545d032c0b4ccac9d978d5317ea4bc8a3da22e8
     parser.add_option("--level", dest="level", type="int", default=3, action="store", help="A level to decide how far from congestion to look for candidates for re-routing [default: %default]", metavar="FILE")
     (options, args) = parser.parse_args()
     
