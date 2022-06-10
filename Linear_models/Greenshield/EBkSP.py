@@ -162,10 +162,16 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             avr_car_length = traci.edge.getLastStepLength(road.encode("ascii"))
             # Assuming that min gap = 2.5m
             k_jam = road_length/(avr_car_length + 2.5)
+            if k_i >= k_jam:
+                k_i = k_jam - 0.1
             k_o = k_jam/2
             v_f = graph.edge[road][successor_road]["speed"]
             v = v_f * (1 - k_i/k_jam)
             t = road_length / v
+            #teste peso negativo
+            if(t <= 0):
+                logging.debug("Peso negativo encontrado na aresta %s"%(road))
+                logging.debug("k_i = %d\nk_j= %d\nv_f = %d"%(k_i, k_jam, v_f))
             graph.edge[road][successor_road]["weight"] = t
             network_capacity += k_jam
             edges_number += 1

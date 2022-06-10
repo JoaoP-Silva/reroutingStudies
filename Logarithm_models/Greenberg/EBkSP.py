@@ -162,9 +162,21 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             avr_car_length = traci.edge.getLastStepLength(road.encode("ascii"))
             # Assuming that min gap = 2.5m
             k_jam = road_length/(avr_car_length + 2.5)
+
+            if(k_jam <= 1):
+                k_jam = 2
+
+            if(k_i == 0):
+                k_i = 1
+        
+            if k_i >= k_jam:
+                k_i = k_jam - 1
             k_o = k_jam/math.e
             v_f = graph.edge[road][successor_road]["speed"]
             v_o = v_f/math.e
+            temp = k_jam/k_i
+            if temp <= 0:
+                temp = 1.1
             v = v_o * math.log(k_jam/k_i)
             t = road_length / v
             graph.edge[road][successor_road]["weight"] = t

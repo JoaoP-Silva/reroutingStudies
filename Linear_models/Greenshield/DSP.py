@@ -117,7 +117,7 @@ def build_road_graph(network):
         source_edge = connection_tag["from"]        
         dest_edge = connection_tag["to"]
         #print source_edge, dest_edge, edges_length[source_edge]
-        graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=edges_length[source_edge], weight=0, congested = 0, speed = edges_speed[source_edge])
+        graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=float(edges_length[source_edge]), weight=0, congested = 0, speed = edges_speed[source_edge])
         
 
     return graph          
@@ -158,10 +158,17 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             avr_car_length = traci.edge.getLastStepLength(road.encode("ascii"))
             # Assuming that min gap = 2.5m
             k_jam = road_length/(avr_car_length + 2.5)
+            #usando sem vias com peso 0
+            if k_i >= k_jam:
+                k_i = k_jam - 0.1
             k_o = k_jam/2
             v_f = graph.edge[road][successor_road]["speed"]
             v = v_f * (1 - k_i/k_jam)
             t = road_length / v
+            #teste peso negativo
+            if(t <= 0):
+                logging.debug("Peso negativo t = %d encontrado na aresta %s\n"%(t, road))
+                logging.debug("k_i = %d\nk_j= %d\nv_f = %d\nroad_length = %d"%(k_i, k_jam, v_f, road_length))
             graph.edge[road][successor_road]["weight"] = t
             if(k_i/k_jam > k_o):
                 graph.edge[road][successor_road]["congested"] = 1
