@@ -150,7 +150,7 @@ def log_densidade_speed(time):
 
 
 def update_travel_time_on_roads(graph, time, begin_of_cycle):
-    congested_roads = []
+    congested_roads = set()
     for road in graph.nodes_iter():
         if road.startswith(":"): continue
         for successor_road in graph.successors_iter(road):
@@ -170,7 +170,7 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             if(k_i/k_jam > k_o):
                 graph.edge[road][successor_road]["congested"] = 1
                 if(road.encode("ascii") not in congested_roads):
-                    congested_roads.append(road.encode("ascii"))
+                    congested_roads.add(road.encode("ascii"))
         
                 
                 
@@ -271,7 +271,7 @@ def create_vehicle_dict_probability(probability, vnumber):
 
 
 def gen_canditates_reroute(graph, congested_roads, level):
-    vehicles_reroute = []
+    vehicles_reroute = set()
     for road in congested_roads:
         cont = 0
         bfs = []
@@ -290,7 +290,7 @@ def gen_canditates_reroute(graph, congested_roads, level):
             if(len(vehicles_in_the_lane)>0):
                 for vehicle in vehicles_in_the_lane:
                     if(vehicle not in vehicles_reroute):
-                        vehicles_reroute.append(vehicle)
+                        vehicles_reroute.add(vehicle)
     
     
     return vehicles_reroute

@@ -150,7 +150,7 @@ def log_densidade_speed(time):
     output.write(str(np.amin(speed) * 3.6) + '\t' + str(np.average(speed) * 3.6) + '\t' + str(np.amax(speed) * 3.6) + '\t' + str(density)+'\n')
 
 def update_travel_time_on_roads(graph, time, begin_of_cycle):
-    congested_roads = []
+    congested_roads = set()
     network_capacity = 0
     edges_number = 0
     for road in graph.nodes_iter():
@@ -185,7 +185,7 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             if(k_i/k_jam > k_o):
                 graph.edge[road][successor_road]["congested"] = 1
                 if(road.encode("ascii") not in congested_roads):
-                    congested_roads.append(road.encode("ascii"))
+                    congested_roads.add(road.encode("ascii"))
             avg_cap = network_capacity/edges_number
         
                 
@@ -287,7 +287,7 @@ def create_vehicle_dict_probability(probability, vnumber):
 
 
 def gen_canditates_reroute(graph, congested_roads, level):
-    vehicles_reroute = []
+    vehicles_reroute = set()
     ODpairs = set()
     for road in congested_roads:
         cont = 0
@@ -308,7 +308,7 @@ def gen_canditates_reroute(graph, congested_roads, level):
             if(len(vehicles_in_the_lane)>0):
                 for vehicle in vehicles_in_the_lane:
                     if(vehicle not in vehicles_reroute):
-                        vehicles_reroute.append(vehicle)
+                        vehicles_reroute.add(vehicle)
                         source = traci.vehicle.getRoadID(vehicle)
                         route = traci.vehicle.getRoute(vehicle)
                         ODpair = (source, route[-1])
