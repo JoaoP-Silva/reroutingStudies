@@ -168,6 +168,7 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
                 k_i = k_jam - 0.1
             k_o = k_jam/math.e
             v_f = graph.edge[road][successor_road]["speed"]
+            v_o = v_f/math.e
             network_capacity += k_jam
             edges_number += 1
             if(k_i/k_jam > k_o):
