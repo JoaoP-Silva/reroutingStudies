@@ -109,12 +109,13 @@ def genConfInterval(Greenshield, Drake, Greenberg, GU):
         values_Drake[i] = sample_Drake.mean()
         values_Greenberg[i] = sample_Greenberg.mean()
         values_GU[i] = sample_GU.mean()
-    plt.hist(values_Greenshield, bins=30, edgecolor='k')
-    plt.hist(values_Drake, bins=30, edgecolor='b')
-    plt.hist(values_Greenberg, bins=30, edgecolor='grey')
-    plt.hist(values_GU, bins=30, edgecolor='black')
+    plt.hist(values_Greenshield, bins=30, edgecolor='k', label = 'Greenshield')
+    plt.hist(values_Drake, bins=30, edgecolor='b', label = 'Drake')
+    plt.hist(values_Greenberg, bins=30, edgecolor='grey', label = 'Greenberg')
+    plt.hist(values_GU, bins=30, edgecolor='black', label = 'G/U')
     plt.xlabel('Travel time')
     plt.ylabel('Amostras')
+    plt.legend(loc='upper right')
     plt.savefig("%s/EBkSP_TravelTime_ConfidenceInterval.png"%(GRAPHS))
 
 if __name__ == '__main__':
