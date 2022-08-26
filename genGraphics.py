@@ -90,6 +90,32 @@ def genDf(path, DSP_df, RkSP_df, EBkSP_df, seed):
     df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(path, seed))
     EBkSP_df = EBkSP_df.append(df)
 
+def genConfInterval(Greenshield, Drake, Greenberg, GU):
+    N = 10000
+    size_Greenshield = len(Greenshield)
+    size_Drake = len(Drake)
+    size_Greenberg = len(Greenberg)
+    size_GU = len(GU)
+    values_Greenshield = np.zeros(N)
+    values_Drake = np.zeros(N)
+    values_Greenberg = np.zeros(N)
+    values_GU = np.zeros(N)
+    for i in range(N):
+        sample_Greenshield = Greenshield.sample(size_Greenshield, replace = True)
+        sample_Drake = Drake.sample(size_Drake, replace = True)
+        sample_Greenberg = Greenberg.sample(size_Greenberg, replace = True)
+        sample_GU = GU.sample(size_GU, replace = True)
+        values_Greenshield[i] = sample_Greenshield.mean()
+        values_Drake[i] = sample_Drake.mean()
+        values_Greenberg[i] = sample_Greenberg.mean()
+        values_GU[i] = sample_GU.mean()
+    plt.hist(values_Greenshield, bins=30, edgecolor='k')
+    plt.hist(values_Drake, bins=30, edgecolor='b')
+    plt.hist(values_Greenberg, bins=30, edgecolor='grey')
+    plt.hist(values_GU, bins=30, edgecolor='black')
+    plt.xlabel('Travel time')
+    plt.ylabel('Amostras')
+    plt.savefig("%s/EBkSP_TravelTime_ConfidenceInterval.png"%(GRAPHS))
 
 if __name__ == '__main__':
 
@@ -144,7 +170,13 @@ if __name__ == '__main__':
         GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
 
         i = i + 1
-
+    Greenshield_traveltime = Greenshield_EBkSP.duration
+    Drake_taveltime = Drake_EBkSP.duration
+    Greenberg_traveltime = Greenberg_EBkSP.duration
+    GU_traveltime = GreenbergUnderwood_EBkSP.duration
+    print("Generating confidence interval")
+    genConfInterval(Greenshield_traveltime, Drake_taveltime, Greenberg_traveltime, GU_traveltime)
+    print("Generating travel time graphs")
     genGraphTravelTime()
     print("Saved all graphics in the respective directory")
 
