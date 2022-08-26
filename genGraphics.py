@@ -19,13 +19,13 @@ Drake_EBkSP = pd.DataFrame(columns = df_columns)
 Greenberg_DSP = pd.DataFrame(columns = df_columns)
 Greenberg_RkSP = pd.DataFrame(columns = df_columns)
 Greenberg_EBkSP = pd.DataFrame(columns = df_columns)
-Underwood_DSP = pd.DataFrame(columns = df_columns)
-Underwood_RkSP = pd.DataFrame(columns = df_columns)
-Underwood_EBkSP = pd.DataFrame(columns = df_columns)
+GreenbergUnderwood_DSP = pd.DataFrame(columns = df_columns)
+GreenbergUnderwood_RkSP = pd.DataFrame(columns = df_columns)
+GreenbergUnderwood_EBkSP = pd.DataFrame(columns = df_columns)
 
 def genGraphTravelTime():
-    labels = ['Greenshield - DSP', 'Drake - DSP', 'Greenberg - DSP', 'Underwood - DSP']
-    values = [Greenshield_DSP.duration, Drake_DSP.duration, Greenberg_DSP.duration, Underwood_DSP.duration]
+    labels = ['Greenshield - DSP', 'Drake - DSP', 'Greenberg - DSP', 'G/U - DSP']
+    values = [Greenshield_DSP.duration, Drake_DSP.duration, Greenberg_DSP.duration, GreenbergUnderwood_DSP.duration]
 
     fig, ax = plt.subplots()
     ax.boxplot(values)
@@ -35,8 +35,8 @@ def genGraphTravelTime():
     ax.set_ylabel('Travel Time')
     fig.savefig("%s/DSP_TravelTime.png"%(GRAPHS))
 
-    labels = ['Greenshield - RkSP', 'Drake - RkSP', 'Greenberg - RkSP', 'Underwood - RkSP']
-    values = [Greenshield_RkSP.duration, Drake_RkSP.duration, Greenberg_RkSP.duration, Underwood_RkSP.duration]
+    labels = ['Greenshield - RkSP', 'Drake - RkSP', 'Greenberg - RkSP', 'G/U - RkSP']
+    values = [Greenshield_RkSP.duration, Drake_RkSP.duration, Greenberg_RkSP.duration, GreenbergUnderwood_RkSP.duration]
 
     fig, ax = plt.subplots()
     ax.boxplot(values)
@@ -46,8 +46,8 @@ def genGraphTravelTime():
     ax.set_ylabel('Travel Time')
     plt.savefig("%s/RkSP_TravelTime.png"%(GRAPHS))
 
-    labels = ['Greenshield - EBkSP', 'Drake - EBkSP', 'Greenberg - EBkSP', 'Underwood - EBkSP']
-    values = [Greenshield_EBkSP.duration, Drake_EBkSP.duration, Greenberg_EBkSP.duration, Underwood_EBkSP.duration]
+    labels = ['Greenshield - EBkSP', 'Drake - EBkSP', 'Greenberg - EBkSP', 'G/U - EBkSP']
+    values = [Greenshield_EBkSP.duration, Drake_EBkSP.duration, Greenberg_EBkSP.duration, GreenbergUnderwood_EBkSP.duration]
 
     fig, ax = plt.subplots()
     ax.boxplot(values)
@@ -134,14 +134,14 @@ if __name__ == '__main__':
         df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(new_path, i))
         Greenberg_EBkSP = Greenberg_EBkSP.append(df)
 
-        print("Underwood\n")
-        new_path = ("Logarithm_models/Underwood/")
+        print("Greenberg-Underwood\n")
+        new_path = ("Logarithm_models/Greenberg-Underwood/")
         df = xmlToDataframe("%sOutputs_DSP/reroute_DSP_%d.xml"%(new_path, i))
-        Underwood_DSP = Underwood_DSP.append(df)
+        GreenbergUnderwood_DSP = GreenbergUnderwood_DSP.append(df)
         df = xmlToDataframe("%sOutputs_RkSP/reroute_RkSP_%d.xml"%(new_path, i))
-        Underwood_RkSP = Underwood_RkSP.append(df)
+        GreenbergUnderwood_RkSP = GreenbergUnderwood_RkSP.append(df)
         df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(new_path, i))
-        Underwood_EBkSP = Underwood_EBkSP.append(df)
+        GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
 
         i = i + 1
 
