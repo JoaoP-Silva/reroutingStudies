@@ -190,6 +190,10 @@ if __name__ == '__main__':
     GU_traveltime = GreenbergUnderwood_EBkSP.duration
     print("Generating confidence interval")
     genConfInterval(Greenshield_traveltime, Drake_taveltime, Greenberg_traveltime, GU_traveltime)
+    print("Writting means on the file")
+    f = open("%s/Percentile.txt"%(GRAPHS), "a")
+    text = "Greenshield travel time mean = %s\nDrake travel time mean = %s\nGreenberg travel time mean = %s\nGU travel time mean = %s\n"%(np.mean(Greenshield_traveltime), np.mean(Drake_taveltime), np.mean(Greenberg_traveltime), np.mean(GU_traveltime))
+    f.write(text)
     print("Generating travel time graphs")
     genGraphTravelTime()
     print("Saved all graphics in the respective directory")
