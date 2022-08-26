@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from paths import GRAPHS
 import xml.etree.ElementTree as ET
-
+from datetime import datetime
 #Defining all dataframes
 df_columns = ['id', 'duration', 'routeLength' , 'rerouteNo', 'CO_abs', 'CO2_abs', 'HC_abs', 'PMx_abs', 'NOx_abs', 'fuel_abs']
 Greenshield_DSP = pd.DataFrame(columns = df_columns)
@@ -91,6 +91,7 @@ def genDf(path, DSP_df, RkSP_df, EBkSP_df, seed):
     EBkSP_df = EBkSP_df.append(df)
 
 def genConfInterval(Greenshield, Drake, Greenberg, GU):
+    f = open("%s/Percentile.txt"%(GRAPHS), "a")
     N = 10000
     size_Greenshield = len(Greenshield)
     size_Drake = len(Drake)
@@ -109,6 +110,18 @@ def genConfInterval(Greenshield, Drake, Greenberg, GU):
         values_Drake[i] = sample_Drake.mean()
         values_Greenberg[i] = sample_Greenberg.mean()
         values_GU[i] = sample_GU.mean()
+    mean_Greenshield = np.mean(Greenshield)
+    mean_Drake = np.mean(Drake)
+    mean_Greenberg = np.mean(Greenberg)
+    mean_GU = np.mean(GU)
+    IC_Greenshield = "[%f, %f]"%(np.percentile(values_Greenshield, 2.5), np.percentile(values_Greenshield, 97.5))
+    IC_Drake = "[%f, %f]"%(np.percentile(values_Drake, 2.5), np.percentile(values_Drake, 97.5))
+    IC_Greenberg = "[%f, %f]"%(np.percentile(values_Greenberg, 2.5), np.percentile(values_Greenberg, 97.5))
+    IC_GU = "[%f, %f]"%(np.percentile(values_GU, 2.5), np.percentile(values_GU, 97.5))
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    IC_info = "Data info generated at %s\nGreenshield = %s\nDrake = %s\nGreenberg = %s\nGU = %s\n"%(dt_string, IC_Greenshield, IC_Drake, IC_Greenberg, IC_GU)
+    f.write(IC_info)
     plt.hist(values_Greenshield, bins=30, edgecolor='k', label = 'Greenshield')
     plt.hist(values_Drake, bins=30, edgecolor='b', label = 'Drake')
     plt.hist(values_Greenberg, bins=30, edgecolor='grey', label = 'Greenberg')
