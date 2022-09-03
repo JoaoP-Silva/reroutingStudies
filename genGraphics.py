@@ -90,8 +90,8 @@ def genDf(path, DSP_df, RkSP_df, EBkSP_df, seed):
     df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(path, seed))
     EBkSP_df = EBkSP_df.append(df)
 
-def genConfInterval(Greenshield, Drake, Greenberg, GU):
-    f = open("%s/Percentile.txt"%(GRAPHS), "a")
+def genConfInterval(Greenshield, Drake, Greenberg, GU, metric):
+    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric),"a")
     N = 10000
     size_Greenshield = len(Greenshield)
     size_Drake = len(Drake)
@@ -126,10 +126,14 @@ def genConfInterval(Greenshield, Drake, Greenberg, GU):
     plt.hist(values_Drake, bins=30, edgecolor='b', label = 'Drake')
     plt.hist(values_Greenberg, bins=30, edgecolor='grey', label = 'Greenberg')
     plt.hist(values_GU, bins=30, edgecolor='black', label = 'G/U')
-    plt.xlabel('Travel time')
+    plt.xlabel('%s'%(metric))
     plt.ylabel('Amostras')
     plt.legend(loc='upper right')
-    plt.savefig("%s/EBkSP_TravelTime_ConfidenceInterval.png"%(GRAPHS))
+    plt.savefig("%s/EBkSP_%s_ConfidenceInterval.png"%(GRAPHS, metric))
+    print("Writting means on the file")
+    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
+    text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
+    f.write(text)
 
 if __name__ == '__main__':
 
@@ -184,17 +188,31 @@ if __name__ == '__main__':
         GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
 
         i = i + 1
+
     Greenshield_traveltime = Greenshield_EBkSP.duration
-    Drake_taveltime = Drake_EBkSP.duration
+    Drake_traveltime = Drake_EBkSP.duration
     Greenberg_traveltime = Greenberg_EBkSP.duration
     GU_traveltime = GreenbergUnderwood_EBkSP.duration
+    
+    Greenshield_reroute_n = Greenshield_EBkSP.rerouteNo
+    Drake_reroute_n = Drake_EBkSP.rerouteNo
+    Greenberg_reroute_n = Greenberg_EBkSP.rerouteNo
+    GU_reroute_n = GreenbergUnderwood_EBkSP.rerouteNo
+
+    Greenshield_CO2 = Greenshield_EBkSP.CO2_abs
+    Drake_CO2 = Drake_EBkSP.CO2_abs
+    Greenberg_CO2 = Greenberg_EBkSP.CO2_abs
+    GU_CO2 = GreenbergUnderwood_EBkSP.CO2_abs
+
+    Greenshield_length = Greenshield_EBkSP.routeLength
+    Drake_length = Drake_EBkSP.routeLength
+    Greenberg_length = Greenberg_EBkSP.routeLength
+    GU_length = GreenbergUnderwood_EBkSP.routeLength
+    
     print("Generating confidence interval")
-    genConfInterval(Greenshield_traveltime, Drake_taveltime, Greenberg_traveltime, GU_traveltime)
-    print("Writting means on the file")
-    f = open("%s/Percentile.txt"%(GRAPHS), "a")
-    text = "Greenshield travel time mean = %s\nDrake travel time mean = %s\nGreenberg travel time mean = %s\nGU travel time mean = %s\n"%(np.mean(Greenshield_traveltime), np.mean(Drake_taveltime), np.mean(Greenberg_traveltime), np.mean(GU_traveltime))
-    f.write(text)
-    print("Generating travel time graphs")
-    genGraphTravelTime()
+    metric = "routeLength" #Type here the metric that the Confidence Interval is related to
+    genConfInterval(Greenshield_length, Drake_length, Greenberg_length, GU_length, metric)
+    #print("Generating travel time graphs")
+    #genGraphTravelTime()
     print("Saved all graphics in the respective directory")
 
