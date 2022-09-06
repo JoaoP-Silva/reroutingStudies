@@ -57,7 +57,6 @@ def genGraphTravelTime():
     ax.set_ylabel('Travel Time')
     plt.savefig("%s/EBkSP_TravelTime.png"%(GRAPHS))
 
-
 def xmlToDataframe(path):
   prstree = ET.parse(path)
   root = prstree.getroot()
@@ -80,7 +79,6 @@ def xmlToDataframe(path):
     
   return pd.DataFrame(rows, columns=['id', 'duration', 'routeLength' , 'rerouteNo', 'CO_abs', 'CO2_abs', 'HC_abs', 'PMx_abs', 'NOx_abs', 'fuel_abs'])
 
-
 def genDf(path, DSP_df, RkSP_df, EBkSP_df, seed):
     df = xmlToDataframe("%sOutputs_DSP/reroute_DSP_%d.xml"%(path, seed))
     DSP_df = DSP_df.append(df)
@@ -90,9 +88,76 @@ def genDf(path, DSP_df, RkSP_df, EBkSP_df, seed):
     df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(path, seed))
     EBkSP_df = EBkSP_df.append(df)
 
-def genConfInterval(Greenshield, Drake, Greenberg, GU, metric):
+def genConfInterval_hist(data_list, metric):
+    Greenshield = data_list[0]
+    Drake = data_list[1]
+    Greenberg = data_list[2]
+    GU = data_list[3]
+
     f = open("%s/Percentile_%s.txt"%(GRAPHS, metric),"a")
-    N = 10000
+    mean_Greenshield = np.mean(Greenshield)
+    mean_Drake = np.mean(Drake)
+    mean_Greenberg = np.mean(Greenberg)
+    mean_GU = np.mean(GU)
+    IC_Greenshield = "[%f, %f]"%(np.percentile(Greenshield, 2.5), np.percentile(Greenshield, 97.5))
+    IC_Drake = "[%f, %f]"%(np.percentile(Drake, 2.5), np.percentile(Drake, 97.5))
+    IC_Greenberg = "[%f, %f]"%(np.percentile(Greenberg, 2.5), np.percentile(Greenberg, 97.5))
+    IC_GU = "[%f, %f]"%(np.percentile(GU, 2.5), np.percentile(GU, 97.5))
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    IC_info = "Data info generated at %s\nGreenshield = %s\nDrake = %s\nGreenberg = %s\nGU = %s\n"%(dt_string, IC_Greenshield, IC_Drake, IC_Greenberg, IC_GU)
+    f.write(IC_info)
+    plt.hist(Greenshield, bins=30, edgecolor='k', label = 'Greenshield')
+    plt.hist(Drake, bins=30, edgecolor='b', label = 'Drake')
+    plt.hist(Greenberg, bins=30, edgecolor='grey', label = 'Greenberg')
+    plt.hist(GU, bins=30, edgecolor='black', label = 'G/U')
+    plt.xlabel('%s'%(metric))
+    plt.ylabel('Amostras')
+    plt.legend(loc='upper right')
+    plt.savefig("%s/EBkSP_%s_ConfidenceInterval.png"%(GRAPHS, metric))
+    print("Writting means on the file")
+    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
+    text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
+    f.write(text)
+
+def genConfInterval_bar(data_list, metric):
+    Greenshield = data_list[0]
+    Drake = data_list[1]
+    Greenberg = data_list[2]
+    GU = data_list[3]
+
+    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric),"a")
+    mean_Greenshield = np.mean(Greenshield)
+    mean_Drake = np.mean(Drake)
+    mean_Greenberg = np.mean(Greenberg)
+    mean_GU = np.mean(GU)
+    IC_Greenshield = "[%f, %f]"%(np.percentile(Greenshield, 2.5), np.percentile(Greenshield, 97.5))
+    IC_Drake = "[%f, %f]"%(np.percentile(Drake, 2.5), np.percentile(Drake, 97.5))
+    IC_Greenberg = "[%f, %f]"%(np.percentile(Greenberg, 2.5), np.percentile(Greenberg, 97.5))
+    IC_GU = "[%f, %f]"%(np.percentile(GU, 2.5), np.percentile(GU, 97.5))
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    IC_info = "Data info generated at %s\nGreenshield = %s\nDrake = %s\nGreenberg = %s\nGU = %s\n"%(dt_string, IC_Greenshield, IC_Drake, IC_Greenberg, IC_GU)
+    f.write(IC_info)
+    plt.hist(Greenshield, bins=30, edgecolor='k', label = 'Greenshield')
+    plt.hist(Drake, bins=30, edgecolor='b', label = 'Drake')
+    plt.hist(Greenberg, bins=30, edgecolor='grey', label = 'Greenberg')
+    plt.hist(GU, bins=30, edgecolor='black', label = 'G/U')
+    plt.xlabel('%s'%(metric))
+    plt.ylabel('Amostras')
+    plt.legend(loc='upper right')
+    plt.savefig("%s/EBkSP_%s_ConfidenceInterval.png"%(GRAPHS, metric))
+    print("Writting means on the file")
+    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
+    text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
+    f.write(text)
+
+def bootstrap_in(data_list, N):
+    Greenshield = pd.Series(data_list[0])
+    Drake = pd.Series(data_list[1])
+    Greenberg = pd.Series(data_list[2])
+    GU = pd.Series(data_list[3])
+
     size_Greenshield = len(Greenshield)
     size_Drake = len(Drake)
     size_Greenberg = len(Greenberg)
@@ -110,30 +175,12 @@ def genConfInterval(Greenshield, Drake, Greenberg, GU, metric):
         values_Drake[i] = sample_Drake.mean()
         values_Greenberg[i] = sample_Greenberg.mean()
         values_GU[i] = sample_GU.mean()
-    mean_Greenshield = np.mean(Greenshield)
-    mean_Drake = np.mean(Drake)
-    mean_Greenberg = np.mean(Greenberg)
-    mean_GU = np.mean(GU)
-    IC_Greenshield = "[%f, %f]"%(np.percentile(values_Greenshield, 2.5), np.percentile(values_Greenshield, 97.5))
-    IC_Drake = "[%f, %f]"%(np.percentile(values_Drake, 2.5), np.percentile(values_Drake, 97.5))
-    IC_Greenberg = "[%f, %f]"%(np.percentile(values_Greenberg, 2.5), np.percentile(values_Greenberg, 97.5))
-    IC_GU = "[%f, %f]"%(np.percentile(values_GU, 2.5), np.percentile(values_GU, 97.5))
-    now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    IC_info = "Data info generated at %s\nGreenshield = %s\nDrake = %s\nGreenberg = %s\nGU = %s\n"%(dt_string, IC_Greenshield, IC_Drake, IC_Greenberg, IC_GU)
-    f.write(IC_info)
-    plt.hist(values_Greenshield, bins=30, edgecolor='k', label = 'Greenshield')
-    plt.hist(values_Drake, bins=30, edgecolor='b', label = 'Drake')
-    plt.hist(values_Greenberg, bins=30, edgecolor='grey', label = 'Greenberg')
-    plt.hist(values_GU, bins=30, edgecolor='black', label = 'G/U')
-    plt.xlabel('%s'%(metric))
-    plt.ylabel('Amostras')
-    plt.legend(loc='upper right')
-    plt.savefig("%s/EBkSP_%s_ConfidenceInterval.png"%(GRAPHS, metric))
-    print("Writting means on the file")
-    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
-    text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
-    f.write(text)
+
+    data_list[0] = values_Greenshield
+    data_list[1] = values_Drake
+    data_list[2] = values_Greenberg
+    data_list[3] = values_GU
+    print("Bootstrap done")
 
 if __name__ == '__main__':
 
@@ -208,11 +255,22 @@ if __name__ == '__main__':
     Drake_length = Drake_EBkSP.routeLength
     Greenberg_length = Greenberg_EBkSP.routeLength
     GU_length = GreenbergUnderwood_EBkSP.routeLength
-    
+
+    traveltime_l = [Greenshield_traveltime, Drake_traveltime, Greenberg_traveltime, GU_traveltime]
+    reroute_n_l = [Greenshield_reroute_n, Drake_reroute_n, Greenberg_reroute_n, GU_reroute_n]
+    CO2_l = [Greenshield_CO2, Drake_CO2, Greenberg_CO2, GU_CO2]
+    length_l = [Greenshield_length, Drake_length, Greenberg_length, GU_length]
+
+    metricList = [traveltime_l, reroute_n_l, CO2_l, length_l]
+    print("Select metric\n1: traveltime\t2: reroute_n\t3: C02\t 4: routeLength")
+    m_i = int(input()) - 1
+    metrics = ["traveltime", "reroute_n", "C02", "routeLength"]
+    metric = metrics[m_i]
+
+    print("Applying bootstrap into data")
+    bootstrap_in(metricList[m_i], 10000)
+
     print("Generating confidence interval")
-    metric = "routeLength" #Type here the metric that the Confidence Interval is related to
-    genConfInterval(Greenshield_length, Drake_length, Greenberg_length, GU_length, metric)
-    #print("Generating travel time graphs")
-    #genGraphTravelTime()
+    genConfInterval_bar(metricList[m_i], metric)
     print("Saved all graphics in the respective directory")
 
