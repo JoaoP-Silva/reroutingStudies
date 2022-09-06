@@ -114,7 +114,7 @@ def genConfInterval_hist(data_list, metric):
     plt.xlabel('%s'%(metric))
     plt.ylabel('Amostras')
     plt.legend(loc='upper right')
-    plt.savefig("%s/EBkSP_%s_ConfidenceInterval.png"%(GRAPHS, metric))
+    plt.savefig("%s/EBkSP_%s_ConfidenceInterval_hist.png"%(GRAPHS, metric))
     print("Writting means on the file")
     f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
     text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
@@ -139,14 +139,22 @@ def genConfInterval_bar(data_list, metric):
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     IC_info = "Data info generated at %s\nGreenshield = %s\nDrake = %s\nGreenberg = %s\nGU = %s\n"%(dt_string, IC_Greenshield, IC_Drake, IC_Greenberg, IC_GU)
     f.write(IC_info)
-    plt.hist(Greenshield, bins=30, edgecolor='k', label = 'Greenshield')
-    plt.hist(Drake, bins=30, edgecolor='b', label = 'Drake')
-    plt.hist(Greenberg, bins=30, edgecolor='grey', label = 'Greenberg')
-    plt.hist(GU, bins=30, edgecolor='black', label = 'G/U')
-    plt.xlabel('%s'%(metric))
-    plt.ylabel('Amostras')
-    plt.legend(loc='upper right')
-    plt.savefig("%s/EBkSP_%s_ConfidenceInterval.png"%(GRAPHS, metric))
+    barWidth = 0.3
+    bars = [mean_Greenshield, mean_Drake, mean_Greenberg, mean_GU]
+    yer_Greenshield = [np.percentile(Greenshield, 2.5), np.percentile(Greenshield, 97.5)]
+    yer_Drake = [np.percentile(Drake, 2.5), np.percentile(Drake, 97.5)]
+    yer_Greenberg = [np.percentile(Greenberg, 2.5), np.percentile(Greenberg, 97.5)]
+    yer_GU = [np.percentile(GU, 2.5), np.percentile(GU, 97.5)]
+    yer = [yer_Greenshield, yer_Drake, yer_Greenberg, yer_GU]
+    temp = np.vstack((bars, bars))
+    yer = np.transpose(yer)
+    yer = np.abs(yer - temp)
+    r1 = np.arange(len(bars))
+    plt.bar(r1, bars, width = barWidth, color = 'blue', edgecolor = 'black', yerr=yer, capsize=7)
+    plt.xticks([r for r in range(len(bars))], ['Greenshield', 'Drake', 'Greenberg', 'G/U'])
+    plt.ylabel('%s'%(metric))
+    plt.savefig("%s/EBkSP_%s_ConfidenceInterval_bar.png"%(GRAPHS, metric))
+    plt.clf()
     print("Writting means on the file")
     f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
     text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
@@ -261,16 +269,22 @@ if __name__ == '__main__':
     CO2_l = [Greenshield_CO2, Drake_CO2, Greenberg_CO2, GU_CO2]
     length_l = [Greenshield_length, Drake_length, Greenberg_length, GU_length]
 
+    metrics = ["Average travel time (seconds)", "Average number of reroutings", "C02 emissions (grams)", "Route length (meters)"]
     metricList = [traveltime_l, reroute_n_l, CO2_l, length_l]
-    print("Select metric\n1: traveltime\t2: reroute_n\t3: C02\t 4: routeLength")
-    m_i = int(input()) - 1
-    metrics = ["traveltime", "reroute_n", "C02", "routeLength"]
-    metric = metrics[m_i]
+    m_i = 0
+    while m_i < len(metricList):
+        print("Select metric\n1: traveltime\t2: reroute_n\t3: C02\t 4: routeLength\n5: exit")
+        m_i = int(input()) - 1
+        if m_i >= 4:
+            break
+        metric = metrics[m_i]
 
-    print("Applying bootstrap into data")
-    bootstrap_in(metricList[m_i], 10000)
+        print("Applying bootstrap into data")
+        bootstrap_in(metricList[m_i], 10000)
 
-    print("Generating confidence interval")
-    genConfInterval_bar(metricList[m_i], metric)
-    print("Saved all graphics in the respective directory")
+        print("Generating confidence interval")
+        genConfInterval_bar(metricList[m_i], metric)
+        print("Saved all graphics in the respective directory")
+        
+        
 
