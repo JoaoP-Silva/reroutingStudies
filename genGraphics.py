@@ -125,7 +125,16 @@ def genConfInterval_bar(data_list, metric):
     Drake = data_list[1]
     Greenberg = data_list[2]
     GU = data_list[3]
-
+    if metric == "C02 emissions (kilograms)":
+        Greenshield = Greenshield/1000000
+        Drake = Drake/1000000
+        Greenberg = Greenberg/1000000
+        GU = GU/1000000
+    elif metric == "Average travel time (minutes)":
+        Greenshield = Greenshield/60
+        Drake = Drake/60
+        Greenberg = Greenberg/60
+        GU = GU/60
     f = open("%s/Percentile_%s.txt"%(GRAPHS, metric),"a")
     mean_Greenshield = np.mean(Greenshield)
     mean_Drake = np.mean(Drake)
@@ -151,6 +160,10 @@ def genConfInterval_bar(data_list, metric):
     yer = np.abs(yer - temp)
     r1 = np.arange(len(bars))
     plt.bar(r1, bars, width = barWidth, color = 'blue', edgecolor = 'black', yerr=yer, capsize=7)
+    if metric == "Average travel time (seconds)":
+        plt.ylim(bottom = 3200)
+    elif metric == "Average travel time (minutes)":
+        plt.ylim(bottom = 45)
     plt.xticks([r for r in range(len(bars))], ['Greenshield', 'Drake', 'Greenberg', 'G/U'])
     plt.ylabel('%s'%(metric))
     plt.savefig("%s/EBkSP_%s_ConfidenceInterval_bar.png"%(GRAPHS, metric))
@@ -269,7 +282,7 @@ if __name__ == '__main__':
     CO2_l = [Greenshield_CO2, Drake_CO2, Greenberg_CO2, GU_CO2]
     length_l = [Greenshield_length, Drake_length, Greenberg_length, GU_length]
 
-    metrics = ["Average travel time (seconds)", "Average number of reroutings", "C02 emissions (grams)", "Route length (meters)"]
+    metrics = ["Average travel time (minutes)", "Average number of reroutings", "C02 emissions (kilograms)", "Route length (meters)"]
     metricList = [traveltime_l, reroute_n_l, CO2_l, length_l]
     m_i = 0
     while m_i < len(metricList):
