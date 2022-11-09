@@ -82,13 +82,12 @@ def xmlToDataframe(path):
 def genDf(path, DSP_df, RkSP_df, EBkSP_df, seed):
     df = xmlToDataframe("%sOutputs_DSP/reroute_DSP_%d.xml"%(path, seed))
     DSP_df = DSP_df.append(df)
-    #print(DSP_df.head())
     df = xmlToDataframe("%sOutputs_RkSP/reroute_RkSP_%d.xml"%(path, seed))
     RkSP_df = RkSP_df.append(df)
     df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(path, seed))
     EBkSP_df = EBkSP_df.append(df)
 
-def genConfInterval_hist(data_list, metric):
+def genConfInterval_hist(data_list, metric, scenario):
     Greenshield = data_list[0]
     Drake = data_list[1]
     Greenberg = data_list[2]
@@ -114,13 +113,13 @@ def genConfInterval_hist(data_list, metric):
     plt.xlabel('%s'%(metric))
     plt.ylabel('Amostras')
     plt.legend(loc='upper right')
-    plt.savefig("%s/EBkSP_%s_ConfidenceInterval_hist.png"%(GRAPHS, metric))
+    plt.savefig("%s/EBkSP_%s_%s_ConfidenceInterval_hist.png"%(GRAPHS, scenario, metric))
     print("Writting means on the file")
-    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
+    f = open("%s/Percentile_%s_%s.txt"%(GRAPHS, scenario, metric), "a")
     text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
     f.write(text)
 
-def genConfInterval_bar(data_list, metric):
+def genConfInterval_bar(data_list, metric, scenario):
     Greenshield = data_list[0]
     Drake = data_list[1]
     Greenberg = data_list[2]
@@ -135,7 +134,7 @@ def genConfInterval_bar(data_list, metric):
         Drake = Drake/60
         Greenberg = Greenberg/60
         GU = GU/60
-    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric),"a")
+    f = open("%s/Percentile_%s_%s.txt"%(GRAPHS, scenario, metric),"a")
     mean_Greenshield = np.mean(Greenshield)
     mean_Drake = np.mean(Drake)
     mean_Greenberg = np.mean(Greenberg)
@@ -149,29 +148,38 @@ def genConfInterval_bar(data_list, metric):
     IC_info = "Data info generated at %s\nGreenshield = %s\nDrake = %s\nGreenberg = %s\nGU = %s\n"%(dt_string, IC_Greenshield, IC_Drake, IC_Greenberg, IC_GU)
     f.write(IC_info)
     barWidth = 0.3
-    bars = [mean_Greenshield, mean_Drake, mean_Greenberg, mean_GU]
+    bars = [mean_GU, mean_Greenshield, mean_Drake, mean_Greenberg]
     yer_Greenshield = [np.percentile(Greenshield, 2.5), np.percentile(Greenshield, 97.5)]
     yer_Drake = [np.percentile(Drake, 2.5), np.percentile(Drake, 97.5)]
     yer_Greenberg = [np.percentile(Greenberg, 2.5), np.percentile(Greenberg, 97.5)]
     yer_GU = [np.percentile(GU, 2.5), np.percentile(GU, 97.5)]
-    yer = [yer_Greenshield, yer_Drake, yer_Greenberg, yer_GU]
+    yer = [yer_GU ,yer_Greenshield, yer_Drake, yer_Greenberg]
     temp = np.vstack((bars, bars))
     yer = np.transpose(yer)
     yer = np.abs(yer - temp)
     r1 = np.arange(len(bars))
-    plt.bar(r1, bars, width = barWidth, color = 'blue', edgecolor = 'black', yerr=yer, capsize=7)
-    if metric == "Average travel time (seconds)":
+    hatches = ['/', '+', 'x', 'o']
+    colors = ["blue", "green", "red", "pink"]
+    handles = plt.bar(r1, bars, width = barWidth, color = colors, edgecolor = 'black', yerr=yer, capsize=7, hatch = hatches)
+    if (metric == "Average travel time (seconds)" and scenario == "Chicago"):
         plt.ylim(bottom = 3200)
-    elif metric == "Average travel time (minutes)":
+    elif (metric == "Average travel time (minutes)" and scenario == "Chicago"):
         plt.ylim(bottom = 45)
-    plt.xticks([r for r in range(len(bars))], ['Greenshield', 'Drake', 'Greenberg', 'G/U'])
+    elif (metric == "Route length (meters)" and scenario == "Chicago"):
+        plt.ylim(bottom = 12000)
+    elif (metric == "C02 emissions (kilograms)" and scenario == "Chicago"):
+        plt.ylim(bottom = 7)
+    plt.xticks([r for r in range(len(bars))], ['G/U', 'Greenshield', 'Drake', 'Greenberg'])
     plt.ylabel('%s'%(metric))
-    plt.savefig("%s/EBkSP_%s_ConfidenceInterval_bar.png"%(GRAPHS, metric))
+    plt.legend(handles, ['G/U', 'Greenshield', 'Drake', 'Greenberg'])
+    plt.suptitle(("%s - %s")%(scenario, metric))
+    plt.savefig("%s/EBkSP_%s_%s_ConfidenceInterval_bar.png"%(GRAPHS, scenario, metric))
     plt.clf()
     print("Writting means on the file")
-    f = open("%s/Percentile_%s.txt"%(GRAPHS, metric), "a")
+    f = open("%s/Percentile_%s_%s.txt"%(GRAPHS, scenario, metric), "a")
     text = "Greenshield %s mean = %s\nDrake %s mean = %s\nGreenberg %s mean = %s\nGU %s mean = %s\n"%(metric, np.mean(Greenshield), metric, np.mean(Drake), metric, np.mean(Greenberg), metric, np.mean(GU))
     f.write(text)
+    f.close()
 
 def bootstrap_in(data_list, N):
     Greenshield = pd.Series(data_list[0])
@@ -208,6 +216,15 @@ if __name__ == '__main__':
     print("Type the number of seeds\n")
     seeds = int(input())
     i = 0
+    scenario = ["Chicago", "Cologne"]
+    print("Scenario:\n 1 - Chicago\n 2 - Cologne\n")
+    sce = int(input())
+
+    if(sce != 2):
+        sce = 0
+    else:
+        sce = 1
+
     root = os.getcwd()
 
     while(i < seeds):
@@ -215,44 +232,39 @@ if __name__ == '__main__':
         print("Processing the linear models\n")
         print("Greenshield\n")
         new_path = ("Linear_models/Greenshield/")
-        df = xmlToDataframe("%sOutputs_DSP/reroute_DSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
         Greenshield_DSP = Greenshield_DSP.append(df)
-        #print(DSP_df.head())
-        df = xmlToDataframe("%sOutputs_RkSP/reroute_RkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
         Greenshield_RkSP = Greenshield_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         Greenshield_EBkSP = Greenshield_EBkSP.append(df)
-
-        #print("Other\n")
-        #new_path = ("%s/Linear_models/Other/"%(root))
-        #genDf(new_path, Other_DSP, Other_RkSP, Other_EBkSP, i)
 
         print("Processing the logarithm models\n")
         print("Drake\n")
         new_path = ("Logarithm_models/Drake/")
-        df = xmlToDataframe("%sOutputs_DSP/reroute_DSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
         Drake_DSP = Drake_DSP.append(df)
-        df = xmlToDataframe("%sOutputs_RkSP/reroute_RkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
         Drake_RkSP = Drake_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         Drake_EBkSP = Drake_EBkSP.append(df)
 
         print("Greenberg\n")
         new_path = ("Logarithm_models/Greenberg/")
-        df = xmlToDataframe("%sOutputs_DSP/reroute_DSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
         Greenberg_DSP = Greenberg_DSP.append(df)
-        df = xmlToDataframe("%sOutputs_RkSP/reroute_RkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
         Greenberg_RkSP = Greenberg_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         Greenberg_EBkSP = Greenberg_EBkSP.append(df)
 
         print("Greenberg-Underwood\n")
         new_path = ("Logarithm_models/Greenberg-Underwood/")
-        df = xmlToDataframe("%sOutputs_DSP/reroute_DSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
         GreenbergUnderwood_DSP = GreenbergUnderwood_DSP.append(df)
-        df = xmlToDataframe("%sOutputs_RkSP/reroute_RkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path,scenario[sce], i))
         GreenbergUnderwood_RkSP = GreenbergUnderwood_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/reroute_EBkSP_%d.xml"%(new_path, i))
+        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
 
         i = i + 1
@@ -296,7 +308,7 @@ if __name__ == '__main__':
         bootstrap_in(metricList[m_i], 10000)
 
         print("Generating confidence interval")
-        genConfInterval_bar(metricList[m_i], metric)
+        genConfInterval_bar(metricList[m_i], metric, scenario[sce])
         print("Saved all graphics in the respective directory")
         
         
