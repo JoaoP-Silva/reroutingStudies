@@ -13,10 +13,10 @@ def runthis(num, scenario, outputDir):
         while(i < num):
             output =("Outputs_%s/%s/reroute_%s_%d.xml"%(reroute[count], outputDir, reroute[count], i))
             if(reroute[count]) == "DSP":
-                os.system("python %s.py -s %s/sim.sumocfg -n %s/sim.net.xml -i 900 -b 1000 -e 10000 -d %d -o %s -l logs/%s.log"%(reroute[count], scenario, scenario, i, output, reroute[count]))
+                os.system("python2 %s.py -s %s/sim.sumocfg -n %s/sim.net.xml -i 900 -b 1000 -e 10000 -d %d -o %s -l logs/%s.log"%(reroute[count], scenario, scenario, i, output, reroute[count]))
                 i = i+1   
             else: 
-                os.system("python %s.py -s %s/sim.sumocfg -n %s/sim.net.xml -k 3 -i 900 -b 1000 -e 10000 -d %d -o %s -l logs/%s.log"%(reroute[count], scenario, scenario, i, output, reroute[count]))
+                os.system("python2 %s.py -s %s/sim.sumocfg -n %s/sim.net.xml -k 3 -i 900 -b 1000 -e 10000 -d %d -o %s -l logs/%s.log"%(reroute[count], scenario, scenario, i, output, reroute[count]))
                 i = i+1
         print("End simulation of %s"%(reroute[count]))
         count = count + 1

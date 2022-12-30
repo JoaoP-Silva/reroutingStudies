@@ -1,5 +1,5 @@
 # reroutingStudies
-My implementations of centralized rerouting strategies using Python(v2.7) and SUMO(v0.30).
+My implementations of centralized rerouting strategies using Python and SUMO.
 
 ## Rerouting strategies
 The article "Proactive Vehicle Re-routing Strategies for Congestion Avoidance"(2012) describes three different aproachs related to vehicle rerouting: DSP, RkSP and EBkSP. Those strategies were implemented varying the math model used to predict road weight. Below, all codes directories are listed:

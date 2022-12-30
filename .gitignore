@@ -3,3 +3,10 @@
 
 #Logs
 *.log
+
+#Bins
+*.pyc
+
+#Scenarios Dir
+Cologne-JP/*
+Chicago/*

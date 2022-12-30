@@ -26,18 +26,15 @@ from k_shortest_paths import k_shortest_paths
 from optparse import OptionParser
 from bs4 import BeautifulSoup
 
-#os.environ["SUMO_HOME"]="/home/guidoni/sumo/Journal/sumo-0.25.0"
-#os.environ["SUMO_HOME"]="/Users/guidoni/Documents/workspace/IEEE TVT/sumo-0.27.1"
+
+os.environ["SUMO_HOME"] = "/home/joao/Sumo/sumo-0.30.0"
 
 
-SUMO_HOME ="/c:/Eclipse/sumo-.30"
 
 # We need to import Python modules from the $SUMO_HOME/tools directory
-""" if 'SUMO_HOME' in os.environ:
-    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
-    sys.path.append(tools)
-else:
-    sys.exit("Environment variable SUMO_HOME not defined") """
+tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+sys.path.append(tools)
+
     
 import traci
 
