@@ -7,6 +7,10 @@
 #Bins
 *.pyc
 
+#txts
+*.txt
+
 #Scenarios Dir
 Cologne-JP/*
 Chicago/*
+
