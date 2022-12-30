@@ -13,5 +13,5 @@ The script [runAll.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main
 runAll.py 5
 ```
 ## Other Scripts
-* [genGraphics.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/genGraphics.py): Do bootstrap on data and generates differents graphs about the outputs.
+* [genCharts.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/genGraphics.py): Do bootstrap on data and generates differents charts about the outputs.
 * [runSome.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/runSome.py): Select the especific models to run in one simulation.
