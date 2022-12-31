@@ -13,8 +13,9 @@ The script [runAll.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main
 runAll.py 5
 ```
 ## Other Scripts
-* [genGraphics.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/genGraphics.py): Do bootstrap on data and generates differents graphs about the outputs.
-* [runSome.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/runSome.py): Select the especific models to run in one simulation using EBkSP.
+* [genCharts.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/genGraphics.py)(__python3 script__): Do bootstrap on data and generates differents images about the outputs. _Obs.:_ Uses pandas append (deprecated), in the future (i hope) it will be modified to pandas concat.
+
+* [runSome.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/runSome.py): Select the especific models to run in one simulation using EBkSP. Has the same function call as runAll.py.
 
 ## Packages and scenarios
 - Sumo 0.30 is available in this [link](https://sourceforge.net/projects/sumo/files/sumo/version%200.30.0/). To install sumo run ```./configure``` then ``` make install ``` in sumo dir. Problems related with the HUGE constant in some src files can be solved changing it to DLB_MAX (check compiler extension for maximum double variable value). Sumo also requires [xerces](https://xerces.apache.org/xerces-c/) and [foxtoolkit](http://www.fox-toolkit.org/).
