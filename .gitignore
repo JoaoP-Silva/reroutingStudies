@@ -14,3 +14,9 @@
 Cologne-JP/*
 Chicago/*
 Cologne/*
+
+#Images
+*.png
+
+#vscode
+*.vscode/*

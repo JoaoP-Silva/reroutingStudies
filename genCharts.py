@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from paths import GRAPHS
 import xml.etree.ElementTree as ET
 from datetime import datetime
 #Defining all dataframes
@@ -22,6 +21,9 @@ Greenberg_EBkSP = pd.DataFrame(columns = df_columns)
 GreenbergUnderwood_DSP = pd.DataFrame(columns = df_columns)
 GreenbergUnderwood_RkSP = pd.DataFrame(columns = df_columns)
 GreenbergUnderwood_EBkSP = pd.DataFrame(columns = df_columns)
+
+#Name of your images dir to save files
+GRAPHS = "Images"
 
 def genGraphTravelTime():
     labels = ['Greenshield - DSP', 'Drake - DSP', 'Greenberg - DSP', 'G/U - DSP']
@@ -232,38 +234,38 @@ if __name__ == '__main__':
         print("Processing the linear models\n")
         print("Greenshield\n")
         new_path = ("Linear_models/Greenshield/")
-        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        Greenshield_DSP = Greenshield_DSP.append(df)
-        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
-        Greenshield_RkSP = Greenshield_RkSP.append(df)
+        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+        # Greenshield_DSP = Greenshield_DSP.append(df)
+        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
+        # Greenshield_RkSP = Greenshield_RkSP.append(df)
         df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         Greenshield_EBkSP = Greenshield_EBkSP.append(df)
 
         print("Processing the logarithm models\n")
         print("Drake\n")
         new_path = ("Logarithm_models/Drake/")
-        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        Drake_DSP = Drake_DSP.append(df)
-        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
-        Drake_RkSP = Drake_RkSP.append(df)
+        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+        # Drake_DSP = Drake_DSP.append(df)
+        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
+        # Drake_RkSP = Drake_RkSP.append(df)
         df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         Drake_EBkSP = Drake_EBkSP.append(df)
 
         print("Greenberg\n")
         new_path = ("Logarithm_models/Greenberg/")
-        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        Greenberg_DSP = Greenberg_DSP.append(df)
-        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
-        Greenberg_RkSP = Greenberg_RkSP.append(df)
+        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+        # Greenberg_DSP = Greenberg_DSP.append(df)
+        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
+        # Greenberg_RkSP = Greenberg_RkSP.append(df)
         df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         Greenberg_EBkSP = Greenberg_EBkSP.append(df)
 
         print("Greenberg-Underwood\n")
         new_path = ("Logarithm_models/Greenberg-Underwood/")
-        df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        GreenbergUnderwood_DSP = GreenbergUnderwood_DSP.append(df)
-        df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path,scenario[sce], i))
-        GreenbergUnderwood_RkSP = GreenbergUnderwood_RkSP.append(df)
+        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+        # GreenbergUnderwood_DSP = GreenbergUnderwood_DSP.append(df)
+        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path,scenario[sce], i))
+        # GreenbergUnderwood_RkSP = GreenbergUnderwood_RkSP.append(df)
         df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
         GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
 

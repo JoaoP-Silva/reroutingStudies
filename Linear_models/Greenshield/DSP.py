@@ -6,25 +6,49 @@ import os
 import sys
 from paths import ROOT_PATH
 sys.path.insert(1, ROOT_PATH)
+from DSP_functions import *
 import subprocess
-import signal
 import socket
 import logging
 
-from networkx.algorithms.traversal.breadth_first_search import bfs_edges
 import thread
 import time
-import tempfile
-import math
+
 import random
-import networkx as nx
-import numpy as np
 
-LOG_CARROS_RUAS = 100
-
-from k_shortest_paths import k_shortest_paths
 from optparse import OptionParser
-from bs4 import BeautifulSoup
+
+
+def update_travel_time_on_roads(graph, time, begin_of_cycle):
+    congested_roads = set()
+    for road in graph.nodes_iter():
+        if road.startswith(":"): continue
+        for successor_road in graph.successors_iter(road):
+            # If it is the first measurement in a cycle, then do not compute the mean
+            road_length = graph.edge[road][successor_road]["length"]
+            k_i = traci.edge.getLastStepVehicleNumber(road.encode("ascii"))
+            avr_car_length = traci.edge.getLastStepLength(road.encode("ascii"))
+            # Assuming that min gap = 2.5m
+            k_jam = road_length/(avr_car_length + 2.5)
+            #usando sem vias com peso 0
+            if k_i >= k_jam:
+                k_i = k_jam - 0.1
+            k_o = k_jam/2
+            v_f = graph.edge[road][successor_road]["speed"]
+            v = v_f * (1 - k_i/k_jam)
+            t = road_length / v
+            #teste peso negativo
+            if(t <= 0):
+                logging.debug("Peso negativo t = %d encontrado na aresta %s\n"%(t, road))
+                logging.debug("k_i = %d\nk_j= %d\nv_f = %d\nroad_length = %d"%(k_i, k_jam, v_f, road_length))
+            graph.edge[road][successor_road]["weight"] = t
+            if(k_i/k_jam > k_o):
+                graph.edge[road][successor_road]["congested"] = 1
+                if(road.encode("ascii") not in congested_roads):
+                    congested_roads.add(road.encode("ascii"))
+        
+    return graph,congested_roads
+
 
 
 os.environ["SUMO_HOME"] = "/home/joao/Sumo/sumo-0.30.0"
@@ -79,187 +103,11 @@ def find_unused_port():
 #            time.sleep(1)
 #            if sumo.returncode == None:
 #                time.sleep(10)
-    
-    
-    
-edges_length = {}
-edges_lane = {}
-edges_speed = {}
-def build_road_graph(network):                
-    # Input   
-    f = open(network)
-    data = f.read()
-    soup = BeautifulSoup(data, 'lxml')
-
-    f.close()
-
-    for edge_tag in soup.findAll("edge"):
-        lane_tag = edge_tag.find("lane")
-              
-        edge_id = edge_tag["id"]
-        edge_length = float(lane_tag["length"])
-        
-        edges_length[edge_id] = edge_length
-        
-        #teste daniel
-        num_lane_tag = edge_tag.findAll("lane")
-        edges_lane[edge_id] = len(num_lane_tag)
-
-        edge_speed = float(lane_tag["speed"])
-        edges_speed[edge_id] = edge_speed
-
-    graph = nx.DiGraph()            
-
-    for connection_tag in soup.findAll("connection"):
-        source_edge = connection_tag["from"]        
-        dest_edge = connection_tag["to"]
-        #print source_edge, dest_edge, edges_length[source_edge]
-        graph.add_edge(source_edge.encode("ascii"), dest_edge.encode("ascii"), length=float(edges_length[source_edge]), weight=0, congested = 0, speed = edges_speed[source_edge])
-        
-
-    return graph          
- 
-
-def log_densidade_speed(time):
-    vehicles = traci.vehicle.getIDList()
-    density = len(vehicles)
-    speed = []
-
-    output = open('output/average_speed_DSP.txt', 'a')
-
-    for v in vehicles:
-        lane_pos = traci.vehicle.getLanePosition(v)
-        edge = traci.vehicle.getRoadID(v)
-        if edge.startswith(":"): continue
-        position = traci.vehicle.getPosition(v)        
-        route = traci.vehicle.getRoute(v)
-        index = route.index(edge)
-        if index > 0:
-            distance = 500 * (index - 1) + lane_pos
-        else:
-            distance = lane_pos
-
-        traveltime = traci.vehicle.getAdaptedTraveltime(v, time, edge)
-        speed.append(float(distance)/float(time))
-    
-    output.write(str(np.amin(speed) * 3.6) + '\t' + str(np.average(speed) * 3.6) + '\t' + str(np.amax(speed) * 3.6) + '\t' + str(density)+'\n')
-
-def update_travel_time_on_roads(graph, time, begin_of_cycle):
-    congested_roads = set()
-    for road in graph.nodes_iter():
-        if road.startswith(":"): continue
-        for successor_road in graph.successors_iter(road):
-            # If it is the first measurement in a cycle, then do not compute the mean
-            road_length = graph.edge[road][successor_road]["length"]
-            k_i = traci.edge.getLastStepVehicleNumber(road.encode("ascii"))
-            avr_car_length = traci.edge.getLastStepLength(road.encode("ascii"))
-            # Assuming that min gap = 2.5m
-            k_jam = road_length/(avr_car_length + 2.5)
-            #usando sem vias com peso 0
-            if k_i >= k_jam:
-                k_i = k_jam - 0.1
-            k_o = k_jam/2
-            v_f = graph.edge[road][successor_road]["speed"]
-            v = v_f * (1 - k_i/k_jam)
-            t = road_length / v
-            #teste peso negativo
-            if(t <= 0):
-                logging.debug("Peso negativo t = %d encontrado na aresta %s\n"%(t, road))
-                logging.debug("k_i = %d\nk_j= %d\nv_f = %d\nroad_length = %d"%(k_i, k_jam, v_f, road_length))
-            graph.edge[road][successor_road]["weight"] = t
-            if(k_i/k_jam > k_o):
-                graph.edge[road][successor_road]["congested"] = 1
-                if(road.encode("ascii") not in congested_roads):
-                    congested_roads.add(road.encode("ascii"))
-        
-                
-                
-                    
-
-    return graph,congested_roads
-
 
 
 carros_ruas = {}
 CAR_SIZE = 5
 GAP = 2.5
-def log_qnt_carros_ruas(step):
-    
-    carros_ruas[step] = {}
-    for i in range(0,11):
-        carros_ruas[step][i] = 0
-    
-    edges = traci.edge.getIDList()
-    
-    for e in edges:
-        
-        if e.startswith(":"):
-            continue
-        
-        num_vehicles = traci.edge.getLastStepVehicleNumber(e)
-        edge_length = edges_length[e]
-        num_max_vehicles = math.floor(edge_length / float(CAR_SIZE+GAP))
-        if num_max_vehicles != 0:
-            usage = (num_vehicles * 100) / (num_max_vehicles*edges_lane[e])
-        else:
-            usage = 0
-
- 
-        if edge_length > 100: # descartar edges muito pequenas
-            if usage == 0:
-                carros_ruas[step][0] += 1
-            elif 0 < usage <= 10:
-                carros_ruas[step][1] += 1
-            elif 10 < usage <= 20:
-                carros_ruas[step][2] += 1
-            elif 20 < usage <= 30:
-                carros_ruas[step][3] += 1
-            elif 30 < usage <= 40:
-                carros_ruas[step][4] += 1
-            elif 40 < usage <= 50:
-                carros_ruas[step][5] += 1
-            elif 50 < usage <= 60:
-                carros_ruas[step][6] += 1
-            elif 60 < usage <= 70:
-                carros_ruas[step][7] += 1
-            elif 70 < usage <= 80:
-                carros_ruas[step][8] += 1
-            elif 80 < usage <= 90:
-                carros_ruas[step][9] += 1
-            else:
-                carros_ruas[step][10] += 1
-        
-        
-
-def save_log_qnt_carros_ruas(output,step):
-    filename = output.replace("xml", "qcr")
-    f = open(filename, "w")
-    line = ""
-    for i in range(1,step):
-        if i % LOG_CARROS_RUAS == 0:
-            line += str(i)
-            for k in range(0,11):
-                line += "\t" + str(carros_ruas[i][k])
-            line += "\n"
-            
-    f.write(line)
-    f.close()             
-
-
-def save_image_file(output,step):
-    print ("save img file. step = ", step)
-    filename = output.replace(".xml", "_" + str(step) + "_img.txt")
-    f = open(filename, "w")
-    line = ""
-    line  += str(len(traci.vehicle.getIDList())) + "\n"
-    lanes = traci.lane.getIDList()
-    for lane in lanes:
-        occupancy = traci.lane.getLastStepOccupancy(lane)
-        line += lane + "\t" + str(occupancy) + "\n"
-            
-    f.write(line)
-    f.close()
-
 
 
 vehicles_p = {}
@@ -267,56 +115,6 @@ def create_vehicle_dict_probability(probability, vnumber):
     
     for i in range (0,vnumber):
         vehicles_p[str(i)] = random.random()
-
-
-
-def gen_canditates_reroute(graph, congested_roads, level):
-    vehicles_reroute = set()
-    for road in congested_roads:
-        cont = 0
-        bfs = []
-        roads_reroute = bfs_edges(graph, road, True)
-        for lane in roads_reroute:
-            if(lane[0] in bfs):
-                cont = cont + 1
-                bfs = []
-            if(cont==level):
-                break
-            bfs.append(lane[1])
-            vehicles_in_the_lane = traci.edge.getLastStepVehicleIDs(lane[1].encode("ascii"))
-            #If is the first iteration in the loop, 
-            if(cont == 0 and lane[0] not in bfs):
-                vehicles_in_the_lane += traci.edge.getLastStepVehicleIDs(lane[0].encode("ascii"))
-            if(len(vehicles_in_the_lane)>0):
-                for vehicle in vehicles_in_the_lane:
-                    if(vehicle not in vehicles_reroute):
-                        vehicles_reroute.add(vehicle)
-    
-    
-    return vehicles_reroute
-
-
-
-
-
-def reroute_vehicles(list_vehicles, graph, probability):
-    ####simple_paths = []
-
-    for vehicle in list_vehicles:
-        
-        #if vehicles_p[vehicle] > probability:
-        #    continue
-        
-        source = traci.vehicle.getRoadID(vehicle)
-        if source.startswith(":"): continue
-        route = traci.vehicle.getRoute(vehicle)
-        destination = route[-1]
-                                        
-        if source != destination:
-            logging.debug("Calculating shortest paths for pair (%s, %s)" % (source, destination))
-            new_route = nx.dijkstra_path(graph, source, destination)
-            traci.vehicle.setRoute(vehicle, new_route)   
-  
          
     
 
@@ -351,9 +149,6 @@ def run(network, begin, end, interval, t, output, probability, vnumber, level):
         # Se time > 0, simular X carros por time segundos.
         if t > 0 and step > t + 1:
             flag = 1
-        
-        if (int(step) == 100) or (int(step) == 150) or (int(step) == 200):
-            save_image_file(output,step)
         
         #log_densidade_speed(step) 
         logging.debug("Simulation time %d" % step)
