@@ -205,11 +205,11 @@ def calculate_all_paths(ODpairs, k, graph, all_paths):
     for pair in ODpairs:
         source = pair[0]
         destination = pair[1]
-        if path in all_paths: continue
 
         if source != destination:
             k_paths = k_shortest_paths(graph, source, destination, k)
             for path in k_paths[1]:
+                if path in all_paths: continue
                 all_paths.append(path)
     return all_paths
 
