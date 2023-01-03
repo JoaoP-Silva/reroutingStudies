@@ -163,15 +163,17 @@ def define_urgency(urgency,reroute_list, graph):
 
 
 
-def getLeastPopularPath(kPaths, roadList, fcList, Cavg, graph):
-    Popularity_list = []
+def getLeastPopularPath(kPaths, fcDict, Cavg, graph):
+    leastPopularValue = float('inf')
+    leastPopularIdx = 0
     n = 0
-    for fc in fcList:
-        n += fc
+    i = -1
+    for road in fcDict:
+        n += fcDict[road]
     for path in kPaths:
         PathEv = 0
+        i += 1
         for road in path:
-            i = roadList.index(road)
             C_road = 0
             for successor_road in graph.successors_iter(road):
                 road_length = graph.edge[road][successor_road]["length"]
@@ -179,26 +181,30 @@ def getLeastPopularPath(kPaths, roadList, fcList, Cavg, graph):
                 # Assuming that min gap = 2.5m
                 C_road = road_length/(avr_car_length + 2.5)
                 break
-            if fcList[i] == 0 or C_road ==0 : continue
-            x = fcList[i]/n
-            wi = Cavg/C_road
-            PathEv += wi * x * math.log(x)
+            if(road in fcDict and C_road > 0) :
+                x = fcDict[road]/n
+                wi = Cavg/C_road
+                PathEv += wi * x * math.log(x)
         PathEv = PathEv * -1
         try:
             PopPath = math.exp(PathEv)
         except:
             PopPath = float('inf')
-        Popularity_list.append(PopPath)
-    Least_popular_index = Popularity_list.index(min(Popularity_list))
-    return kPaths[Least_popular_index]
+
+        if(PopPath < leastPopularValue):
+            leastPopularValue = PopPath
+            leastPopularIdx = i
+    return kPaths[i]
     
         
 
-def updateFootprint(Path, fcList, roadList):
+def updateFootprint(Path, fcDict):
     for road in Path:
-        i = roadList.index(road)
-        fcList[i] += 1
-    return fcList
+        if(road not in fcDict):
+            fcDict[road] = 1
+        else:
+            fcDict[road] += 1
+    return fcDict
   
          
 def calculate_all_paths(ODpairs, k, graph, all_paths):
@@ -208,45 +214,31 @@ def calculate_all_paths(ODpairs, k, graph, all_paths):
 
         if source != destination:
             k_paths = k_shortest_paths(graph, source, destination, k)
-            for path in k_paths[1]:
-                if path in all_paths: continue
-                all_paths.append(path)
+            all_paths[(source, destination)] = k_paths[1]
+            
     return all_paths
 
 
 
 def reroute_vehicles(allPaths, vehicle_list, avg_cap, graph, k):
-    fc_list = []
-    road_list = []
+
+    fc_dict = {}
     initial = 1
-    for path in allPaths:
-        for road in path:
-            if road not in road_list:
-                road_list.append(road)
-                fc_list.append(0)
-        
+
     for vehicle in vehicle_list:
         k_paths = []
         route = traci.vehicle.getRoute(vehicle)
         source = traci.vehicle.getRoadID(vehicle)
         destination = route[-1]
+        if(source == destination): continue
         ODpair = (source, destination)
-        for path in allPaths:
-            p_source = path[0]
-            p_dest = path[-1]
-            p_ODpair = (p_source, p_dest)
-            if p_ODpair == ODpair:
-                k_paths.append(path)
-                if(len(k_paths) == k):
-                    break
+        k_paths = allPaths[ODpair]
+
         if initial == 1:
             traci.vehicle.setRoute(vehicle, k_paths[0])
-            fc_list = updateFootprint(k_paths[0], fc_list, road_list)
+            fc_dict = updateFootprint(k_paths[0], fc_dict)
             initial = 0
         else:
-            new_route = getLeastPopularPath(k_paths, road_list, fc_list, avg_cap, graph)
+            new_route = getLeastPopularPath(k_paths, fc_dict, avg_cap, graph)
             traci.vehicle.setRoute(vehicle, new_route)
-            fc_list = updateFootprint(new_route, fc_list, road_list)
-
-
-
+            fc_dict = updateFootprint(new_route, fc_dict)

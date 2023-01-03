@@ -157,7 +157,7 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
                 candidates_reroute = candidates_and_ODpairs[0]
                 candidates_reroute = define_urgency(urgency, candidates_reroute, road_graph_travel_time)
                 ODpairs = candidates_and_ODpairs[1]
-                all_paths = []
+                all_paths = {}
                 all_paths = calculate_all_paths(ODpairs, k_paths, road_graph_travel_time, all_paths)
             
                 #if step >= travel_time_cycle_begin and travel_time_cycle_begin <= end and step%interval == 0:

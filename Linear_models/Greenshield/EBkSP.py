@@ -153,7 +153,7 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
                 candidates_reroute = candidates_and_ODpairs[0]
                 candidates_reroute = define_urgency(urgency, candidates_reroute, road_graph_travel_time)
                 ODpairs = candidates_and_ODpairs[1]
-                all_paths = []
+                all_paths = {}
                 all_paths = calculate_all_paths(ODpairs, k_paths, road_graph_travel_time, all_paths)
             
                 #if step >= travel_time_cycle_begin and travel_time_cycle_begin <= end and step%interval == 0:
@@ -219,14 +219,14 @@ def main():
         
     # Option handling
     parser = OptionParser()
-    parser.add_option("-c", "--command", dest="command", default="sumo.exe", help="The command used to run SUMO [default: %d efault]", metavar="COMMAND")
-    parser.add_option("-s", "--scenario", dest="scenario", default="Chicago/sim.sumocfg", help="A SUMO configuration file [default: %default]", metavar="FILE")
-    parser.add_option("-n", "--network", dest="network", default="Chicago/sim.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")    
+    parser.add_option("-c", "--command", dest="command", default="sumo", help="The command used to run SUMO [default: %d efault]", metavar="COMMAND")
+    parser.add_option("-s", "--scenario", dest="scenario", default="Cologne/sim.sumocfg", help="A SUMO configuration file [default: %default]", metavar="FILE")
+    parser.add_option("-n", "--network", dest="network", default="Cologne/sim.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")    
     parser.add_option("-b", "--begin", dest="begin", type="int", default=1000, action="store", help="The simulation time (s) at which the re-routing begins [default: %default]", metavar="BEGIN")
     parser.add_option("-e", "--end", dest="end", type="int", default=10000, action="store", help="The simulation time (s) at which the re-routing ends [default: %default]", metavar="END")
     parser.add_option("-i", "--interval", dest="interval", type="int", default=900, action="store", help="The interval (s) of classification [default: %default]", metavar="INTERVAL")
-    parser.add_option("-o", "--output", dest="output", default="Outputs_EBkSP/reroute_ebksp", help="The XML file at which the output must be written [default: %default]", metavar="FILE")
-    parser.add_option("-l", "--logfile", dest="logfile", default="EBkSP-log.txt", help="log messages to logfile [default: %default]", metavar="FILE")
+    parser.add_option("-o", "--output", dest="output", default="rerouteEbksp.xml", help="The XML file at which the output must be written [default: %default]", metavar="FILE")
+    parser.add_option("-l", "--logfile", dest="logfile", default="EBkSP.log", help="log messages to logfile [default: %default]", metavar="FILE")
     parser.add_option("-v", "--vehicle-number", dest="vnumber", type="int", default=0, action="store", help="Number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-t", "--time", dest="time", type="int", default=0, action="store", help="Time to maintain the number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-p", "--probability", dest="probability", type="float", default=1.0, action="store", help="Probability to accept a new route [default: %default]", metavar="FILE")
