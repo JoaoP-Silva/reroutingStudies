@@ -18,6 +18,6 @@ runAll.py 5
 * [runSome.py](https://github.com/JoaoP-Silva/reroutingStudies/blob/main/runSome.py): Select the especific models to run in one simulation using EBkSP. Has the same function call as runAll.py.
 
 ## Packages and scenarios
-- Sumo 0.30 is available in this [link](https://sourceforge.net/projects/sumo/files/sumo/version%200.30.0/). To install sumo run ```./configure``` then ``` make install ``` in sumo dir. Problems related with the HUGE constant in some src files can be solved changing it to DLB_MAX (check compiler extension for maximum double variable value). Sumo also requires [xerces](https://xerces.apache.org/xerces-c/) and [foxtoolkit](http://www.fox-toolkit.org/).
+- Sumo 0.30 is available in this [link](https://sourceforge.net/projects/sumo/files/sumo/version%200.30.0/). To install sumo run ```./configure``` then ``` make install ``` in sumo dir. Problems related with the HUGE constant in some src files can be solved changing it to DBL_MAX (check compiler extension for maximum double variable value). Sumo also requires [xerces](https://xerces.apache.org/xerces-c/) and [foxtoolkit](http://www.fox-toolkit.org/).
 
 - Cologne scenario in NewCologne.zip file can be directly accessed [here](https://sourceforge.net/projects/sumo/files/traffic_data/scenarios/TAPASCologne/TAPASCologne-0.32.0.7z/download).
