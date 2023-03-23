@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import scipy.stats as st
+
 #Defining all dataframes
 df_columns = ['id', 'duration', 'routeLength' , 'rerouteNo', 'CO_abs', 'CO2_abs', 'HC_abs', 'PMx_abs', 'NOx_abs', 'fuel_abs']
 Greenshield_DSP = pd.DataFrame(columns = df_columns)
@@ -24,6 +26,15 @@ GreenbergUnderwood_EBkSP = pd.DataFrame(columns = df_columns)
 
 #Name of your images dir to save files
 GRAPHS = "Images"
+
+def addlabels(y):
+    for i in range(len(y)):
+        if y[i] < 0:
+            plt.text(i, y[i] - 0.375, y[i], ha = 'center')
+        else:
+            plt.text(i, y[i], y[i], ha = 'center')
+
+            
 
 def genGraphTravelTime():
     labels = ['Greenshield - DSP', 'Drake - DSP', 'Greenberg - DSP', 'G/U - DSP']
@@ -174,6 +185,14 @@ def genConfInterval_bar(data_list, metric, scenario):
     plt.xticks([r for r in range(len(bars))], ['G/U', 'Greenshield', 'Drake', 'Greenberg'])
     plt.ylabel('%s'%(metric))
     plt.legend(handles, ['G/U', 'Greenshield', 'Drake', 'Greenberg'])
+
+    if (metric == "Average travel time (minutes)" or metric == "Average travel time (seconds)"):
+        metric = "Average travel time"
+    if (metric == "Route length (meters)"):
+        metric = "Route length"
+    if (metric == "C02 emissions (kilograms)"):
+        metric = "C02 emissions"
+
     plt.suptitle(("%s - %s")%(scenario, metric))
     plt.savefig("%s/EBkSP_%s_%s_ConfidenceInterval_bar.png"%(GRAPHS, scenario, metric))
     plt.clf()
@@ -213,6 +232,39 @@ def bootstrap_in(data_list, N):
     data_list[3] = values_GU
     print("Bootstrap done")
 
+def compareWout( data_list, metric, scenario):
+    Greenshield = data_list[0]
+    Drake = data_list[1]
+    Greenberg = data_list[2]
+    GU = data_list[3]
+    wout= data_list[4] 
+
+    mean_wout = np.mean(wout)
+    mean_Greenshield = round((((mean_wout - np.mean(Greenshield))/mean_wout) * 100), 2)
+    mean_Drake = round((((mean_wout - np.mean(Drake))/mean_wout) * 100), 2)
+    mean_Greenberg = round((((mean_wout - np.mean(Greenberg))/mean_wout) * 100), 2)
+    mean_GU = round((((mean_wout - np.mean(GU))/mean_wout) * 100), 2)
+    barWidth = 0.3
+    bars = [mean_GU, mean_Greenshield, mean_Drake, mean_Greenberg]
+    r1 = np.arange(len(bars))
+    hatches = ['/', '+', 'x', 'o']
+    colors = ["blue", "green", "red", "pink"]
+    handles = plt.bar(r1, bars, width = barWidth, color = colors, edgecolor = 'black', capsize=7, hatch = hatches)
+    plt.xticks([r for r in range(len(bars))], ['G/U', 'Greenshield', 'Drake', 'Greenberg'])
+    plt.ylabel("Percentage of improvement (%)")
+    plt.legend(handles, ['G/U', 'Greenshield', 'Drake', 'Greenberg'], loc = 'lower right')
+    addlabels(bars)
+    if (metric == "Average travel time (minutes)" or metric == "Average travel time (seconds)"):
+        metric = "Average travel time"
+    if (metric == "Route length (meters)"):
+        metric = "Route length"
+        plt.legend(handles, ['G/U', 'Greenshield', 'Drake', 'Greenberg'], loc = 'lower left')
+    if (metric == "C02 emissions (kilograms)"):
+        metric = "C02 emissions"
+    plt.suptitle(("%s - %s")%(scenario, metric))
+    plt.savefig("%s/%s_%s_Improvement.png"%(GRAPHS, scenario, metric))
+    plt.clf()
+    
 if __name__ == '__main__':
 
     print("Type the number of seeds\n")
@@ -229,6 +281,8 @@ if __name__ == '__main__':
 
     root = os.getcwd()
 
+    print("Processing without rerouting")
+    wout = xmlToDataframe("WithoutRerouting/%s_wout.xml"%(scenario[sce]))
     while(i < seeds):
 
         print("Processing the linear models\n")
@@ -275,26 +329,30 @@ if __name__ == '__main__':
     Drake_traveltime = Drake_EBkSP.duration
     Greenberg_traveltime = Greenberg_EBkSP.duration
     GU_traveltime = GreenbergUnderwood_EBkSP.duration
+    wout_traveltime = wout.duration
     
     Greenshield_reroute_n = Greenshield_EBkSP.rerouteNo
     Drake_reroute_n = Drake_EBkSP.rerouteNo
     Greenberg_reroute_n = Greenberg_EBkSP.rerouteNo
     GU_reroute_n = GreenbergUnderwood_EBkSP.rerouteNo
-
+    wout_reroute_n = wout.rerouteNo
+    
     Greenshield_CO2 = Greenshield_EBkSP.CO2_abs
     Drake_CO2 = Drake_EBkSP.CO2_abs
     Greenberg_CO2 = Greenberg_EBkSP.CO2_abs
     GU_CO2 = GreenbergUnderwood_EBkSP.CO2_abs
+    wout_CO2 = wout.CO2_abs
 
     Greenshield_length = Greenshield_EBkSP.routeLength
     Drake_length = Drake_EBkSP.routeLength
     Greenberg_length = Greenberg_EBkSP.routeLength
     GU_length = GreenbergUnderwood_EBkSP.routeLength
+    wout_length = wout.routeLength
 
-    traveltime_l = [Greenshield_traveltime, Drake_traveltime, Greenberg_traveltime, GU_traveltime]
-    reroute_n_l = [Greenshield_reroute_n, Drake_reroute_n, Greenberg_reroute_n, GU_reroute_n]
-    CO2_l = [Greenshield_CO2, Drake_CO2, Greenberg_CO2, GU_CO2]
-    length_l = [Greenshield_length, Drake_length, Greenberg_length, GU_length]
+    traveltime_l = [Greenshield_traveltime, Drake_traveltime, Greenberg_traveltime, GU_traveltime, wout_traveltime]
+    reroute_n_l = [Greenshield_reroute_n, Drake_reroute_n, Greenberg_reroute_n, GU_reroute_n, wout_reroute_n]
+    CO2_l = [Greenshield_CO2, Drake_CO2, Greenberg_CO2, GU_CO2, wout_CO2]
+    length_l = [Greenshield_length, Drake_length, Greenberg_length, GU_length, wout_length]
 
     metrics = ["Average travel time (minutes)", "Average number of reroutings", "C02 emissions (kilograms)", "Route length (meters)"]
     metricList = [traveltime_l, reroute_n_l, CO2_l, length_l]
@@ -307,10 +365,11 @@ if __name__ == '__main__':
         metric = metrics[m_i]
 
         print("Applying bootstrap into data")
-        bootstrap_in(metricList[m_i], 10000)
+        bootstrap_in(metricList[m_i], 1000)
 
         print("Generating confidence interval")
         genConfInterval_bar(metricList[m_i], metric, scenario[sce])
+        compareWout(metricList[m_i], metric, scenario[sce])
         print("Saved all graphics in the respective directory")
         
         
