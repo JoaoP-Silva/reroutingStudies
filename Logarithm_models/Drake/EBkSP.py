@@ -171,7 +171,7 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
     sys.stdout.flush()
     time.sleep(10)
         
-def start_simulation(sumo, scenario, network, begin, end, interval, output, vnumber, time, probability, k_paths, level, urgency, seed):
+def start_simulation(sumo, scenario, network, begin, end, interval, output, vnumber, time, probability, k_paths, level, urgency, seed, scale):
     logging.debug("Finding unused port")
     
     unused_port_lock = UnusedPortLock()
@@ -192,7 +192,7 @@ def start_simulation(sumo, scenario, network, begin, end, interval, output, vnum
         sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output,"--seed", str(seed), "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
     else:
         create_vehicle_dict_probability(probability, 35000)
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output, "--seed", str(seed), "--device.emissions.probability", "1.0","--full-output","output.xml", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
+        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output, "--seed", str(seed), "--device.emissions.probability", "1.0","--full-output","output.xml", "--remote-port", str(remote_port), "--scale", scale], stdout=sys.stdout, stderr=sys.stderr)
         
     
     
@@ -229,7 +229,8 @@ def main():
     parser.add_option("--level", dest="level", type="int", default = 3 , action="store", help="A level to decide how far from congestion to look for candidates for re-routing [default: %default]", metavar="FILE")
     parser.add_option("--urgency", dest="urgency", type="int", default= 2, action="store", help="A variable to set the type of urgency considered. 0 = none, 1 = RCI, 2 = ACI  [default: %default]", metavar="FILE")
     parser.add_option("-d", "--seed", dest="seed", type="int", default=0, action="store", help="The seed used to initialize the basic random number generator [default: %default]", metavar="SEED")
-    
+    parser.add_option("--scale", "--scale", dest="scale", type="float", default=1.0, action="store", help="Value to set the parameter --scale from simulation")
+
     (options, args) = parser.parse_args()
     
     logging.basicConfig(filename=options.logfile, level=logging.DEBUG)
@@ -238,7 +239,7 @@ def main():
     if args:
         logging.warning("Superfluous command line arguments: \"%s\"" % " ".join(args))
         
-    start_simulation(options.command, options.scenario, options.network, options.begin, options.end, options.interval, options.output, options.vnumber, options.time, options.probability, options.k_paths, options.level, options.urgency, options.seed)
+    start_simulation(options.command, options.scenario, options.network, options.begin, options.end, options.interval, options.output, options.vnumber, options.time, options.probability, options.k_paths, options.level, options.urgency, options.seed, options.scale)
     
 if __name__ == "__main__":
     main()    
