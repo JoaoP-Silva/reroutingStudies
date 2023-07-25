@@ -177,7 +177,7 @@ def run(network, begin, end, interval, t, output, probability, vnumber, k_paths,
     sys.stdout.flush()
     time.sleep(10)
         
-def start_simulation(sumo, scenario, network, begin, end, interval, output, vnumber, time, probability, k_paths, level, urgency, seed):
+def start_simulation(sumo, scenario, network, begin, end, interval, output, vnumber, time, probability, k_paths, level, urgency, seed, scale):
     logging.debug("Finding unused port")
     
     unused_port_lock = UnusedPortLock()
@@ -198,7 +198,7 @@ def start_simulation(sumo, scenario, network, begin, end, interval, output, vnum
         sumo = subprocess.Popen([sumo, "-c", scenario, "--tripinfo-output", output,"--seed", str(seed), "--device.emissions.probability", "1.0", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)    
     else:
         create_vehicle_dict_probability(probability, 35000)
-        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output, "--seed", str(seed), "--device.emissions.probability", "1.0","--full-output","output.xml", "--remote-port", str(remote_port)], stdout=sys.stdout, stderr=sys.stderr)
+        sumo = subprocess.Popen([sumo, "-c", scenario, "--max-num-vehicles", str(vnumber),"--tripinfo-output", output, "--vehroute-output", output, "--seed", str(seed), "--device.emissions.probability", "1.0","--full-output","output.xml", "--remote-port", str(remote_port), "--scale", scale], stdout=sys.stdout, stderr=sys.stderr)
         
     
     
@@ -220,13 +220,13 @@ def main():
     # Option handling
     parser = OptionParser()
     parser.add_option("-c", "--command", dest="command", default="sumo", help="The command used to run SUMO [default: %d efault]", metavar="COMMAND")
-    parser.add_option("-s", "--scenario", dest="scenario", default="Cologne/sim.sumocfg", help="A SUMO configuration file [default: %default]", metavar="FILE")
-    parser.add_option("-n", "--network", dest="network", default="Cologne/sim.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")    
+    parser.add_option("-s", "--scenario", dest="scenario", default="/home/joao/Projetos/reroutingStudies/Cologne/sim.sumocfg", help="A SUMO configuration file [default: %default]", metavar="FILE")
+    parser.add_option("-n", "--network", dest="network", default="/home/joao/Projetos/reroutingStudies/Cologne/sim.net.xml", help="A SUMO network definition file [default: %default]", metavar="FILE")    
     parser.add_option("-b", "--begin", dest="begin", type="int", default=1000, action="store", help="The simulation time (s) at which the re-routing begins [default: %default]", metavar="BEGIN")
     parser.add_option("-e", "--end", dest="end", type="int", default=10000, action="store", help="The simulation time (s) at which the re-routing ends [default: %default]", metavar="END")
     parser.add_option("-i", "--interval", dest="interval", type="int", default=900, action="store", help="The interval (s) of classification [default: %default]", metavar="INTERVAL")
     parser.add_option("-o", "--output", dest="output", default="rerouteEbksp.xml", help="The XML file at which the output must be written [default: %default]", metavar="FILE")
-    parser.add_option("-l", "--logfile", dest="logfile", default="EBkSP.log", help="log messages to logfile [default: %default]", metavar="FILE")
+    parser.add_option("-l", "--logfile", dest="logfile", default="/home/joao/Projetos/reroutingStudies/Linear_models/Greenshield/logs/EBkSP.log", help="log messages to logfile [default: %default]", metavar="FILE")
     parser.add_option("-v", "--vehicle-number", dest="vnumber", type="int", default=0, action="store", help="Number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-t", "--time", dest="time", type="int", default=0, action="store", help="Time to maintain the number of vehicles in the network [default: %default]", metavar="FILE")
     parser.add_option("-p", "--probability", dest="probability", type="float", default=1.0, action="store", help="Probability to accept a new route [default: %default]", metavar="FILE")
@@ -235,6 +235,7 @@ def main():
     parser.add_option("--level", dest="level", type="int", default = 3 , action="store", help="A level to decide how far from congestion to look for candidates for re-routing [default: %default]", metavar="FILE")
     parser.add_option("--urgency", dest="urgency", type="int", default= 2, action="store", help="A variable to set the type of urgency considered. 0 = none, 1 = RCI, 2 = ACI  [default: %default]", metavar="FILE")
     parser.add_option("-d", "--seed", dest="seed", type="int", default=0, action="store", help="The seed used to initialize the basic random number generator [default: %default]", metavar="SEED")
+    parser.add_option("--scale", "--scale", dest="scale", type="float", default=1.0, action="store", help="Value to set the parameter --scale from simulation")
     
     (options, args) = parser.parse_args()
     
@@ -244,7 +245,7 @@ def main():
     if args:
         logging.warning("Superfluous command line arguments: \"%s\"" % " ".join(args))
         
-    start_simulation(options.command, options.scenario, options.network, options.begin, options.end, options.interval, options.output, options.vnumber, options.time, options.probability, options.k_paths, options.level, options.urgency, options.seed)
+    start_simulation(options.command, options.scenario, options.network, options.begin, options.end, options.interval, options.output, options.vnumber, options.time, options.probability, options.k_paths, options.level, options.urgency, options.seed, options.scale)
     
 if __name__ == "__main__":
     main()    
