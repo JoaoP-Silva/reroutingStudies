@@ -42,8 +42,11 @@ def runGU(num, scenario, outputDir, root):
 
 if __name__ == '__main__':
     root = os.getcwd()
+
     Chicago = ("%s/Chicago"%(root))
     Cologne = ("%s/Cologne"%(root))
+    Monaco = ("%s/Monaco"%(root))
+
     num = int(sys.argv[1])
     selected = []
     models = ["Greenshield", "Greenberg", "G/U", "Drake"]
@@ -53,8 +56,8 @@ if __name__ == '__main__':
         print(i)
         selected.append(models[i])
         
-    scenario = Cologne
-    outputDir = "Cologne"
+    scenario = Monaco
+    outputDir = "Monaco"
     
     for model in selected:
         if(model == "Greenshield"):

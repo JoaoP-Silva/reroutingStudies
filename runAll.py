@@ -24,20 +24,30 @@ def runthis(num, scenario, outputDir):
 
 if __name__ == '__main__':
     root = os.getcwd()
+
     Chicago = ("%s/Chicago"%(root))
     Cologne = ("%s/Cologne"%(root))
+    Monaco = ("%s/Monaco"%(root))
+
     num = int(sys.argv[1])
 
-    print("Select the scenario to simulate:\n1.Chicago\t2.Cologne")
+    print("Select the scenario to simulate:\n1.Chicago\t2.Cologne\t3.Monaco")
     sce_btn = int(input())
     scenario = Cologne
     outputDir = "Cologne"
+
     if(sce_btn == 1):
         scenario = Chicago
         outputDir = "Chicago"
+
     elif(sce_btn == 2):
         scenario = Cologne
         outputDir = "Cologne"
+
+    elif(sce_btn == 3):
+        scenario = Monaco
+        outputDir = "Monaco"
+
     print("Simulating the linear models\n")
     print("Greenshield\n")
     new_path = ("%s/Linear_models/Greenshield/"%(root))

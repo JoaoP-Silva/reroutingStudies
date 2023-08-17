@@ -14,9 +14,13 @@
 Cologne-JP/*
 Chicago/*
 Cologne/*
+Monaco/*
 
 #Images
 *.png
 
 #vscode
 *.vscode/*
+
+#zip files
+*.zip

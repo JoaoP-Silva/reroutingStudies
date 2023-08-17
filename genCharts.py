@@ -137,17 +137,15 @@ def genConfInterval_bar(data_list, metric, scenario):
     Drake = data_list[1]
     Greenberg = data_list[2]
     GU = data_list[3]
-    if metric == "C02 emissions (kilograms)":
-        Greenshield = Greenshield/1000000
-        Drake = Drake/1000000
-        Greenberg = Greenberg/1000000
-        GU = GU/1000000
-    elif metric == "Average travel time (minutes)":
+    if metric == "Average travel time (minutes)":
         Greenshield = Greenshield/60
         Drake = Drake/60
         Greenberg = Greenberg/60
         GU = GU/60
-    f = open("%s/Percentile_%s_%s.txt"%(GRAPHS, scenario, metric),"a")
+    if (metric == "C02 emissions (mg/s)"):
+        f = open("%s/Percentile_%s_C02 emissions.txt"%(GRAPHS, scenario),"a")
+    else:
+        f = open("%s/Percentile_%s_%s.txt"%(GRAPHS, scenario, metric),"a")
     mean_Greenshield = np.mean(Greenshield)
     mean_Drake = np.mean(Drake)
     mean_Greenberg = np.mean(Greenberg)
@@ -190,7 +188,7 @@ def genConfInterval_bar(data_list, metric, scenario):
         metric = "Average travel time"
     if (metric == "Route length (meters)"):
         metric = "Route length"
-    if (metric == "C02 emissions (kilograms)"):
+    if (metric == "C02 emissions (mg/s)"):
         metric = "C02 emissions"
 
     plt.suptitle(("%s - %s")%(scenario, metric))
@@ -259,7 +257,7 @@ def compareWout( data_list, metric, scenario):
     if (metric == "Route length (meters)"):
         metric = "Route length"
         plt.legend(handles, ['G/U', 'Greenshield', 'Drake', 'Greenberg'], loc = 'lower left')
-    if (metric == "C02 emissions (kilograms)"):
+    if (metric == "C02 emissions (mg/s)"):
         metric = "C02 emissions"
     plt.suptitle(("%s - %s")%(scenario, metric))
     plt.savefig("%s/%s_%s_Improvement.png"%(GRAPHS, scenario, metric))
@@ -354,7 +352,7 @@ if __name__ == '__main__':
     CO2_l = [Greenshield_CO2, Drake_CO2, Greenberg_CO2, GU_CO2, wout_CO2]
     length_l = [Greenshield_length, Drake_length, Greenberg_length, GU_length, wout_length]
 
-    metrics = ["Average travel time (minutes)", "Average number of reroutings", "C02 emissions (kilograms)", "Route length (meters)"]
+    metrics = ["Average travel time (minutes)", "Average number of reroutings", "C02 emissions (mg/s)", "Route length (meters)"]
     metricList = [traveltime_l, reroute_n_l, CO2_l, length_l]
     m_i = 0
     while m_i < len(metricList):
@@ -369,7 +367,7 @@ if __name__ == '__main__':
 
         print("Generating confidence interval")
         genConfInterval_bar(metricList[m_i], metric, scenario[sce])
-        compareWout(metricList[m_i], metric, scenario[sce])
+        #compareWout(metricList[m_i], metric, scenario[sce])
         print("Saved all graphics in the respective directory")
         
         
