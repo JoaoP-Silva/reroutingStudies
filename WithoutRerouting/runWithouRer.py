@@ -12,16 +12,23 @@ if __name__ == '__main__':
     
     Chicago = ("%s/Chicago"%(ROOT_PATH))
     Cologne = ("%s/Cologne"%(ROOT_PATH))
-
+    Monaco = ("%s/Monaco"%(ROOT_PATH))
 
     print("Select the scenario to simulate:\n1.Chicago\t2.Cologne")
     sce_btn = int(input())
     scenario = Cologne
     outputDir = "Cologne"
+
     if(sce_btn == 1):
         scenario = Chicago
         outputDir = "Chicago"
+
     elif(sce_btn == 2):
         scenario = Cologne
         outputDir = "Cologne"
+
+    elif(sce_btn == 3):
+        scenario = Monaco
+        outputDir = "Monaco"
+
     run(scenario, outputDir)
