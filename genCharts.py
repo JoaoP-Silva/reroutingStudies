@@ -268,60 +268,90 @@ if __name__ == '__main__':
     print("Type the number of seeds\n")
     seeds = int(input())
     i = 0
-    scenario = ["Chicago", "Cologne"]
-    print("Scenario:\n 1 - Chicago\n 2 - Cologne\n")
-    sce = int(input())
+    scenario = ["Chicago", "Cologne", "Monaco"]
+    print("Scenario:\n 1 - Chicago\n 2 - Cologne\n 3 - Monaco")
 
-    if(sce != 2):
+    sce = int(input())
+    sce = sce - 1
+
+    if(sce > 2 or sce < 0):
         sce = 0
-    else:
-        sce = 1
 
     root = os.getcwd()
 
     print("Processing without rerouting")
-    wout = xmlToDataframe("WithoutRerouting/%s_wout.xml"%(scenario[sce]))
+
+    #Test whether is the Monaco scenario (need to add "most" before the scenario name)
+    if(sce != 2):
+        wout = xmlToDataframe("WithoutRerouting/%s_wout.xml"%(scenario[sce]))
+    else:
+        wout = xmlToDataframe("WithoutRerouting/most.%s_wout.xml"%(scenario[sce]))
+
+
     while(i < seeds):
 
         print("Processing the linear models\n")
         print("Greenshield\n")
-        new_path = ("Linear_models/Greenshield/")
-        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        # Greenshield_DSP = Greenshield_DSP.append(df)
-        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
-        # Greenshield_RkSP = Greenshield_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
-        Greenshield_EBkSP = Greenshield_EBkSP.append(df)
+        if(sce != 2):
+            new_path = ("Linear_models/Greenshield/")
+            # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+            # Greenshield_DSP = Greenshield_DSP.append(df)
+            # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
+            # Greenshield_RkSP = Greenshield_RkSP.append(df)
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            Greenshield_EBkSP = Greenshield_EBkSP.append(df)
 
-        print("Processing the logarithm models\n")
-        print("Drake\n")
-        new_path = ("Logarithm_models/Drake/")
-        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        # Drake_DSP = Drake_DSP.append(df)
-        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
-        # Drake_RkSP = Drake_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
-        Drake_EBkSP = Drake_EBkSP.append(df)
+            print("Processing the logarithm models\n")
+            print("Drake\n")
+            new_path = ("Logarithm_models/Drake/")
+            # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+            # Drake_DSP = Drake_DSP.append(df)
+            # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
+            # Drake_RkSP = Drake_RkSP.append(df)
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            Drake_EBkSP = Drake_EBkSP.append(df)
 
-        print("Greenberg\n")
-        new_path = ("Logarithm_models/Greenberg/")
-        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        # Greenberg_DSP = Greenberg_DSP.append(df)
-        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
-        # Greenberg_RkSP = Greenberg_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
-        Greenberg_EBkSP = Greenberg_EBkSP.append(df)
+            print("Greenberg\n")
+            new_path = ("Logarithm_models/Greenberg/")
+            # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+            # Greenberg_DSP = Greenberg_DSP.append(df)
+            # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path, scenario[sce], i))
+            # Greenberg_RkSP = Greenberg_RkSP.append(df)
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            Greenberg_EBkSP = Greenberg_EBkSP.append(df)
 
-        print("Greenberg-Underwood\n")
-        new_path = ("Logarithm_models/Greenberg-Underwood/")
-        # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
-        # GreenbergUnderwood_DSP = GreenbergUnderwood_DSP.append(df)
-        # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path,scenario[sce], i))
-        # GreenbergUnderwood_RkSP = GreenbergUnderwood_RkSP.append(df)
-        df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
-        GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
+            print("Greenberg-Underwood\n")
+            new_path = ("Logarithm_models/Greenberg-Underwood/")
+            # df = xmlToDataframe("%sOutputs_DSP/%s/reroute_DSP_%d.xml"%(new_path, scenario[sce], i))
+            # GreenbergUnderwood_DSP = GreenbergUnderwood_DSP.append(df)
+            # df = xmlToDataframe("%sOutputs_RkSP/%s/reroute_RkSP_%d.xml"%(new_path,scenario[sce], i))
+            # GreenbergUnderwood_RkSP = GreenbergUnderwood_RkSP.append(df)
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
+
+        else:
+            new_path = ("Linear_models/Greenshield/")
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/most.reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            Greenshield_EBkSP = Greenshield_EBkSP.append(df)
+
+            print("Processing the logarithm models\n")
+            print("Drake\n")
+            new_path = ("Logarithm_models/Drake/")
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/most.reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            Drake_EBkSP = Drake_EBkSP.append(df)
+
+            print("Greenberg\n")
+            new_path = ("Logarithm_models/Greenberg/")
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/most.reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            Greenberg_EBkSP = Greenberg_EBkSP.append(df)
+
+            print("Greenberg-Underwood\n")
+            new_path = ("Logarithm_models/Greenberg-Underwood/")
+            df = xmlToDataframe("%sOutputs_EBkSP/%s/most.reroute_EBkSP_%d.xml"%(new_path, scenario[sce], i))
+            GreenbergUnderwood_EBkSP = GreenbergUnderwood_EBkSP.append(df)
 
         i = i + 1
+        
 
     Greenshield_traveltime = Greenshield_EBkSP.duration
     Drake_traveltime = Drake_EBkSP.duration
@@ -363,7 +393,7 @@ if __name__ == '__main__':
         metric = metrics[m_i]
 
         print("Applying bootstrap into data")
-        bootstrap_in(metricList[m_i], 1000)
+        bootstrap_in(metricList[m_i], 10000)
 
         print("Generating confidence interval")
         genConfInterval_bar(metricList[m_i], metric, scenario[sce])
