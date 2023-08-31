@@ -13,7 +13,7 @@ def runthis(num, scenario, outputDir):
         while(i < num):
             output =("Outputs_%s/%s/reroute_%s_%d.xml"%(reroute[count], outputDir, reroute[count], i))
             if(reroute[count]) == "DSP":
-                os.system("python2 %s.py -c sumo -s %s/sim.sumocfg -n %s/sim.net.xml -i 900 -b 1000 -e 10000 -d %d -o %s -l logs/%s_%s_%s.log"%(reroute[count], scenario, scenario, i, output, reroute[count]))
+                os.system("python2 %s.py -c sumo -s %s/sim.sumocfg -n %s/sim.net.xml -i 900 -b 1000 -e 10000 -d %d -o %s -l logs/%s.log"%(reroute[count], scenario, scenario, i, output, reroute[count]))
                 i = i+1   
             else: 
                 os.system("python2 %s.py -c sumo -s %s/sim.sumocfg -n %s/sim.net.xml -k 3 -i 900 -b 1000 -e 10000 -d %d -o %s -l logs/%s.log --scale 0.3"%(reroute[count], scenario, scenario, i, output, reroute[count]))
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     #new_path = ("%s/Logarithm_models/Underwood/"%(root))
     #os.chdir(new_path)
     #runthis(num, scenario)
-    
+
     print("Greenberg - Underwood\n")
     new_path = ("%s/Logarithm_models/Greenberg-Underwood/"%(root))
     os.chdir(new_path)
