@@ -24,3 +24,6 @@ Monaco/*
 
 #zip files
 *.zip
+
+#path files
+paths.py
