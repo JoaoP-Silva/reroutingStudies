@@ -59,6 +59,7 @@ def update_travel_time_on_roads(graph, time, begin_of_cycle):
             avg_cap = network_capacity/edges_number
         
     return graph,congested_roads, avg_cap
+
 os.environ["SUMO_HOME"] = "/home/joao/Sumo/sumo-0.30.0"
 
 # We need to import Python modules from the $SUMO_HOME/tools directory
