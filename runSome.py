@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     num = int(sys.argv[1])
     selected = []
-    models = ["Greenshield", "Greenberg", "G/U", "Drake"]
+    models = ["Greenshield", "Greenberg", "GU", "Drake"]
     for argi in range(2, len(sys.argv)):
         i = sys.argv[argi]
         i = int(i)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
             os.chdir(new_path)
             runEBkSP(num, model, scenario, outputDir)
 
-        elif(model == "G/U"):
+        elif(model == "GU"):
             print("Greenberg - Underwood\n")
             new_path = ("%s/Logarithm_models/Greenberg-Underwood/"%(root))
             os.chdir(new_path)
