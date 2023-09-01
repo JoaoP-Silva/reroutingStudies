@@ -268,14 +268,14 @@ if __name__ == '__main__':
     print("Type the number of seeds\n")
     seeds = int(input())
     i = 0
-    scenario = ["Chicago", "Cologne", "Monaco"]
-    print("Scenario:\n 1 - Chicago\n 2 - Cologne\n 3 - Monaco")
+    scenario = ["Chicago", "Cologne", "Monaco", "Luxembourg"]
+    print("Scenario:\n 1 - Chicago\n 2 - Cologne\n 3 - Monaco\n 4 - Luxembourg")
 
     sce = int(input())
     sce = sce - 1
 
-    if(sce > 2 or sce < 0):
-        sce = 0
+    if(sce > 3 or sce < 0):
+        sce = 3
 
     root = os.getcwd()
 
